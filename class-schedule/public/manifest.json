@@ -1,6 +1,6 @@
 {
-  "name": "학교 일정 알리미",
-  "short_name": "일정 알리미",
+  "name": "우리 반 일정",
+  "short_name": "반 일정",
   "description": "수행평가와 학급 행사 일정을 한눈에",
   "start_url": "./",
   "display": "standalone",

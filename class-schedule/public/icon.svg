@@ -1,16 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
   <rect width="192" height="192" rx="42" fill="#F4F6F9"/>
-  <g stroke="#DFE4EC" stroke-width="2">
-    <path d="M32 0V192M64 0V192M96 0V192M128 0V192M160 0V192M0 32H192M0 64H192M0 96H192M0 128H192M0 160H192"/>
+  <g stroke="#DDE2EC" stroke-width="2">
+    <path d="M48 24V168M96 24V168M144 24V168M24 48H168M24 96H168M24 144H168"/>
   </g>
-  <rect x="60" y="30" width="11" height="24" rx="5.5" fill="#1A1C22"/>
-  <rect x="121" y="30" width="11" height="24" rx="5.5" fill="#1A1C22"/>
-  <rect x="34" y="42" width="124" height="112" rx="16" fill="#FFFFFF" stroke="#1A1C22" stroke-width="6"/>
-  <path d="M34 76H158" stroke="#1A1C22" stroke-width="6"/>
-  <rect x="52" y="92" width="22" height="17" rx="4" fill="#D9DEE7"/>
-  <rect x="85" y="92" width="22" height="17" rx="4" fill="#D9DEE7"/>
-  <rect x="118" y="92" width="22" height="17" rx="4" fill="#D9DEE7"/>
-  <rect x="52" y="119" width="22" height="17" rx="4" fill="#D9DEE7"/>
-  <rect x="85" y="119" width="22" height="17" rx="4" fill="#FFE86B"/>
-  <rect x="118" y="119" width="22" height="17" rx="4" fill="#D9DEE7"/>
+  <rect x="34" y="78" width="124" height="36" rx="4" fill="#FFE86B"/>
+  <text x="96" y="107" font-family="Arial Black, sans-serif" font-size="38" font-weight="900" text-anchor="middle" fill="#1A1C22">D-3</text>
 </svg>

@@ -686,3 +686,47 @@ select {
   font-size: 17px;
   line-height: 1;
 }
+
+/* ---------- 사진 ---------- */
+
+.event-photo {
+  display: block;
+  width: 100%;
+  margin-top: 14px;
+  border-radius: 12px;
+  border: 1px solid var(--rule-strong);
+  background: var(--paper);
+}
+
+.photo-drop {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 74px;
+  padding: 14px;
+  border: 1.5px dashed var(--rule-strong);
+  border-radius: 10px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: center;
+  cursor: pointer;
+}
+
+.photo-drop.busy {
+  color: var(--ink-faint);
+  cursor: default;
+}
+
+.photo-drop input {
+  display: none;
+}
+
+.photo-pick img {
+  display: block;
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid var(--rule-strong);
+  margin-bottom: 9px;
+}

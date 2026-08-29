@@ -7,7 +7,9 @@ import {
   isConfigured,
   saveToGithub,
   saveToken,
+  uploadImage,
 } from '../utils/github'
+import { shrinkToBase64 } from '../utils/image'
 
 const NOTIFY_OPTIONS = [14, 7, 3, 1]
 
@@ -19,6 +21,9 @@ export default function EditPanel({ store, onToast, onLock }) {
   const [notify, setNotify] = useState([7, 3, 1])
   const [error, setError] = useState('')
 
+  const [image, setImage] = useState(null) // { name, preview }
+  const [uploading, setUploading] = useState(false)
+
   const [token, setTokenInput] = useState(getToken())
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
@@ -27,6 +32,30 @@ export default function EditPanel({ store, onToast, onLock }) {
     setNotify((prev) =>
       prev.includes(day) ? prev.filter((d) => d !== day) : [...prev, day]
     )
+  }
+
+  async function pickImage(e) {
+    const file = e.target.files?.[0]
+    e.target.value = '' // 같은 파일을 다시 골라도 동작하게
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      setError('사진 파일만 올릴 수 있어요.')
+      return
+    }
+
+    setUploading(true)
+    setError('')
+    try {
+      // 크기를 줄여서 올리고, 일정에는 파일 이름만 저장한다
+      const base64 = await shrinkToBase64(file)
+      const name = await uploadImage(base64)
+      setImage({ name, preview: `data:image/jpeg;base64,${base64}` })
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setUploading(false)
+    }
   }
 
   function handleAdd() {
@@ -46,10 +75,12 @@ export default function EditPanel({ store, onToast, onLock }) {
       date,
       detail: detail.trim(),
       notifyBefore: [...notify].sort((a, b) => b - a),
+      ...(image ? { image: image.name } : {}),
     })
 
     setTitle('')
     setDetail('')
+    setImage(null)
     setError('')
     onToast('일정을 추가했어요')
   }
@@ -135,6 +166,32 @@ export default function EditPanel({ store, onToast, onLock }) {
           </div>
 
           <div className="field">
+            <label>사진 (선택)</label>
+            {image ? (
+              <div className="photo-pick">
+                <img src={image.preview} alt="첨부한 사진 미리보기" />
+                <button className="btn ghost tiny" onClick={() => setImage(null)}>
+                  사진 빼기
+                </button>
+              </div>
+            ) : (
+              <label className={`photo-drop${uploading ? ' busy' : ''}`}>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={pickImage}
+                  disabled={uploading || !getToken()}
+                />
+                {uploading
+                  ? '올리는 중...'
+                  : getToken()
+                    ? '사진 고르기'
+                    : '토큰을 먼저 등록해 주세요'}
+              </label>
+            )}
+          </div>
+
+          <div className="field">
             <label>며칠 전에 알릴까요</label>
             <div className="chips">
               {NOTIFY_OPTIONS.map((d) => (
@@ -152,7 +209,7 @@ export default function EditPanel({ store, onToast, onLock }) {
 
           {error && <p className="error">{error}</p>}
 
-          <button className="btn" onClick={handleAdd}>
+          <button className="btn" disabled={uploading} onClick={handleAdd}>
             일정 추가
           </button>
         </div>
@@ -174,7 +231,10 @@ export default function EditPanel({ store, onToast, onLock }) {
                 />
                 <span className="info">
                   <span className="n">{e.title}</span>
-                  <span className="d">{formatKorean(e.date)}</span>
+                  <span className="d">
+                    {formatKorean(e.date)}
+                    {e.image && ' · 사진'}
+                  </span>
                 </span>
                 <button
                   className="del"

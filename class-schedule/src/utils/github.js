@@ -33,8 +33,20 @@ export function isConfigured() {
   return Boolean(GITHUB.owner && GITHUB.repo)
 }
 
-function endpoint() {
-  return `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${GITHUB.path}`
+function endpoint(path) {
+  return `https://api.github.com/repos/${GITHUB.owner}/${GITHUB.repo}/contents/${path}`
+}
+
+/**
+ * 사진이 올라갈 폴더.
+ * events.json 이 있는 자리 옆에 images 폴더를 쓴다.
+ * 예) class-schedule/public/events.json -> class-schedule/public/images
+ */
+function imageDir() {
+  const parts = GITHUB.path.split('/')
+  parts.pop()
+  parts.push('images')
+  return parts.join('/')
 }
 
 function headers(token) {
@@ -69,6 +81,33 @@ async function explain(res) {
   }
 }
 
+/**
+ * 사진 한 장을 저장소에 올리고 파일 이름을 돌려준다.
+ * 일정에는 이 이름만 저장해두고, 화면에 띄울 때 그때 받아온다.
+ */
+export async function uploadImage(base64) {
+  if (!isConfigured()) throw new Error('config.js에 owner와 repo를 먼저 적어 주세요.')
+
+  const token = getToken()
+  if (!token) throw new Error('토큰을 먼저 등록해 주세요.')
+
+  const name = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`
+
+  const res = await fetch(endpoint(`${imageDir()}/${name}`), {
+    method: 'PUT',
+    headers: headers(token),
+    body: JSON.stringify({
+      message: `사진 추가 ${name}`,
+      content: base64,
+      branch: GITHUB.branch,
+    }),
+  })
+
+  if (!res.ok) throw new Error(await explain(res))
+
+  return name
+}
+
 export async function saveToGithub(json) {
   if (!isConfigured()) throw new Error('config.js에 owner와 repo를 먼저 적어 주세요.')
 
@@ -77,7 +116,7 @@ export async function saveToGithub(json) {
 
   // 파일을 덮어쓰려면 지금 버전의 sha를 먼저 알아야 한다
   let sha
-  const current = await fetch(`${endpoint()}?ref=${GITHUB.branch}`, {
+  const current = await fetch(`${endpoint(GITHUB.path)}?ref=${GITHUB.branch}&t=${Date.now()}`, {
     headers: headers(token),
   })
 
@@ -87,7 +126,7 @@ export async function saveToGithub(json) {
     throw new Error(await explain(current))
   }
 
-  const res = await fetch(endpoint(), {
+  const res = await fetch(endpoint(GITHUB.path), {
     method: 'PUT',
     headers: headers(token),
     body: JSON.stringify({

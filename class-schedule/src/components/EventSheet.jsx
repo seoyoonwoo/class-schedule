@@ -1,6 +1,7 @@
 import { useEffect } from 'react'
 import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
+import { imageUrl } from '../utils/image'
 
 export default function EventSheet({ date, events, onClose }) {
   useEffect(() => {
@@ -41,6 +42,15 @@ export default function EventSheet({ date, events, onClose }) {
               </div>
               <h2 style={{ fontSize: 20 }}>{e.title}</h2>
               {e.detail && <p className="memo">{e.detail}</p>}
+
+              {e.image && (
+                <img
+                  className="event-photo"
+                  src={imageUrl(e.image)}
+                  alt={`${e.title} 안내 사진`}
+                  loading="lazy"
+                />
+              )}
             </div>
           )
         })}
