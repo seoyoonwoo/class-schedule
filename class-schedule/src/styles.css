@@ -1327,3 +1327,42 @@ select {
   margin-top: 2px;
   word-break: keep-all;
 }
+
+/* ---------- 같은 날 일정이 여럿일 때 ---------- */
+
+.hero-list {
+  margin-top: 16px;
+}
+
+.hero-item + .hero-item {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px dashed var(--rule-strong);
+}
+
+.hero-item .title {
+  font-size: 20px;
+}
+
+.hero-item .when {
+  margin-top: 8px;
+}
+
+.hero-item .memo {
+  border-top: none;
+  padding-top: 0;
+  margin-top: 8px;
+}
+
+/* 일정이 없는 칸 */
+.section-empty {
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  background: var(--card);
+  border: 1px dashed var(--rule-strong);
+  border-radius: var(--r);
+  padding: 16px;
+  margin: 0;
+  text-align: center;
+}

@@ -7,7 +7,7 @@ import EditPanel from './components/EditPanel'
 import PhotoViewer from './components/PhotoViewer'
 import { useEvents } from './utils/useEvents'
 import { useAdmin } from './utils/useAdmin'
-import { formatKorean, toKey, today, upcoming } from './utils/dateUtils'
+import { dday, formatKorean, toKey, today, upcoming } from './utils/dateUtils'
 import { GROUPS, groupOf } from './utils/eventTypes'
 
 const BASE_TABS = [
@@ -42,10 +42,12 @@ export default function App() {
     return () => clearTimeout(t)
   }, [toast])
 
-  // 홈 화면: 제일 가까운 하나를 크게, 나머지를 종류별 칸으로
+  // 홈 화면: 제일 가까운 것을 크게, 나머지를 종류별 칸으로.
+  // 같은 날에 여러 개면 전부 크게 보여준다.
   const next = upcoming(store.visible)
-  const hero = next[0]
-  const below = next.slice(1)
+  const soonest = next.length > 0 ? dday(next[0].date) : null
+  const heroes = next.filter((e) => dday(e.date) === soonest)
+  const below = next.slice(heroes.length)
   const sheetEvents = selectedDate
     ? store.visible.filter((e) => e.date === selectedDate)
     : []
@@ -62,22 +64,21 @@ export default function App() {
 
       {!store.loading && !store.error && tab === 'home' && (
         <>
-          <DdayHero event={hero} onPhoto={openPhoto} />
+          <DdayHero events={heroes} onPhoto={openPhoto} />
 
           {GROUPS.map(({ id, label }) => {
             const items = below.filter((e) => groupOf(e.type) === id)
-            if (items.length === 0) return null
             return (
               <section className="section" key={id}>
                 <p className="section-label">{label}</p>
-                <EventList events={items} onSelect={setSelectedDate} />
+                {items.length > 0 ? (
+                  <EventList events={items} onSelect={setSelectedDate} />
+                ) : (
+                  <p className="section-empty">예정된 일정이 없어요</p>
+                )}
               </section>
             )
           })}
-
-          {below.length === 0 && hero && (
-            <p className="empty-note">다른 일정은 없어요</p>
-          )}
         </>
       )}
 
