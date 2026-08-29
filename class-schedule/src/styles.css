@@ -1366,3 +1366,44 @@ select {
   margin: 0;
   text-align: center;
 }
+
+/* 히어로의 사진 열기 버튼 */
+.photo-open {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  width: 100%;
+  margin-top: 14px;
+  padding: 9px 12px 9px 9px;
+  border: 1px solid var(--rule-strong);
+  border-radius: 11px;
+  background: var(--paper);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: left;
+}
+
+.photo-open:active {
+  background: #eef0f5;
+}
+
+.photo-thumb {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--rule-strong);
+  display: block;
+}
+
+.photo-open span:not(.photo-open-arrow) {
+  flex: 1;
+}
+
+.photo-open-arrow {
+  flex: none;
+  font-size: 18px;
+  color: var(--ink-faint);
+}

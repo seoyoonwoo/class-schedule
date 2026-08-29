@@ -42,12 +42,16 @@ export default function App() {
     return () => clearTimeout(t)
   }, [toast])
 
-  // 홈 화면: 제일 가까운 것을 크게, 나머지를 종류별 칸으로.
-  // 같은 날에 여러 개면 전부 크게 보여준다.
+  // 홈 화면: 시험과 수행평가 중 제일 가까운 것을 크게 띄운다.
+  // 제출이나 준비물은 날짜가 더 가깝더라도 자기 칸에만 나온다.
   const next = upcoming(store.visible)
-  const soonest = next.length > 0 ? dday(next[0].date) : null
-  const heroes = next.filter((e) => dday(e.date) === soonest)
-  const below = next.slice(heroes.length)
+  const heroPool = next.filter((e) => groupOf(e.type) !== 'activity')
+  const soonest = heroPool.length > 0 ? dday(heroPool[0].date) : null
+
+  // 같은 날에 여러 개면 하나만 보여주다 놓칠 수 있으니 전부 띄운다
+  const heroes = heroPool.filter((e) => dday(e.date) === soonest)
+  const heroIds = new Set(heroes.map((e) => e.id))
+  const below = next.filter((e) => !heroIds.has(e.id))
   const sheetEvents = selectedDate
     ? store.visible.filter((e) => e.date === selectedDate)
     : []

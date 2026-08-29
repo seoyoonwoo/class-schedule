@@ -2,18 +2,22 @@ import { dday, endDateOf, formatSpan, isRunning, statusLabel } from '../utils/da
 import { eventImages, imageUrl } from '../utils/image'
 import { typeStyle } from '../utils/eventTypes'
 
-function Photos({ event, onPhoto }) {
+/**
+ * 히어로에서는 사진을 펼치지 않는다.
+ * 사진이 크게 박히면 아래 일정들이 화면 밖으로 밀려나기 때문에,
+ * 버튼만 두고 누르면 전체화면으로 띄운다.
+ */
+function PhotoButton({ event, onPhoto }) {
   const photos = eventImages(event)
-  return photos.map((name, i) => (
-    <button
-      key={name}
-      className="event-photo"
-      onClick={() => onPhoto(photos, i)}
-      aria-label={`${event.title} 사진 ${i + 1} 크게 보기`}
-    >
-      <img src={imageUrl(name)} alt="" loading="lazy" />
+  if (photos.length === 0) return null
+
+  return (
+    <button className="photo-open" onClick={() => onPhoto(photos, 0)}>
+      <img className="photo-thumb" src={imageUrl(photos[0])} alt="" loading="lazy" />
+      <span>사진 {photos.length}장 보기</span>
+      <span className="photo-open-arrow">›</span>
     </button>
-  ))
+  )
 }
 
 /**
@@ -58,7 +62,7 @@ export default function DdayHero({ events, onPhoto }) {
         <p className="when">{formatSpan(lead)}</p>
 
         {lead.detail && <p className="memo">{lead.detail}</p>}
-        <Photos event={lead} onPhoto={onPhoto} />
+        <PhotoButton event={lead} onPhoto={onPhoto} />
       </div>
     )
   }
@@ -80,7 +84,7 @@ export default function DdayHero({ events, onPhoto }) {
             </h2>
             <p className="when">{formatSpan(e)}</p>
             {e.detail && <p className="memo">{e.detail}</p>}
-            <Photos event={e} onPhoto={onPhoto} />
+            <PhotoButton event={e} onPhoto={onPhoto} />
           </div>
         ))}
       </div>
