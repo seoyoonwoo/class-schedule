@@ -1,4 +1,13 @@
 {
   "className": "우리 반",
-  "events": []
+  "events": [
+    {
+      "id": "2026-10-08-qsgai",
+      "title": "2학기 1차 지필 평가",
+      "type": "시험",
+      "date": "2026-10-08",
+      "detail": "",
+      "notifyBefore": []
+    }
+  ]
 }
