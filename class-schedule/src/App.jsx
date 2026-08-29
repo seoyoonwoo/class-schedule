@@ -8,6 +8,7 @@ import PhotoViewer from './components/PhotoViewer'
 import { useEvents } from './utils/useEvents'
 import { useAdmin } from './utils/useAdmin'
 import { formatKorean, toKey, today, upcoming } from './utils/dateUtils'
+import { GROUPS, groupOf } from './utils/eventTypes'
 
 const BASE_TABS = [
   { id: 'home', label: '홈', glyph: '✦' },
@@ -41,7 +42,10 @@ export default function App() {
     return () => clearTimeout(t)
   }, [toast])
 
+  // 홈 화면: 제일 가까운 하나를 크게, 나머지를 종류별 칸으로
   const next = upcoming(store.visible)
+  const hero = next[0]
+  const below = next.slice(1)
   const sheetEvents = selectedDate
     ? store.visible.filter((e) => e.date === selectedDate)
     : []
@@ -58,15 +62,22 @@ export default function App() {
 
       {!store.loading && !store.error && tab === 'home' && (
         <>
-          <DdayHero event={next[0]} onPhoto={openPhoto} />
-          <section className="section">
-            <p className="section-label">다가오는 일정</p>
-            <EventList
-              events={next.slice(1)}
-              onSelect={setSelectedDate}
-              emptyText="당분간은 조용하네요"
-            />
-          </section>
+          <DdayHero event={hero} onPhoto={openPhoto} />
+
+          {GROUPS.map(({ id, label }) => {
+            const items = below.filter((e) => groupOf(e.type) === id)
+            if (items.length === 0) return null
+            return (
+              <section className="section" key={id}>
+                <p className="section-label">{label}</p>
+                <EventList events={items} onSelect={setSelectedDate} />
+              </section>
+            )
+          })}
+
+          {below.length === 0 && hero && (
+            <p className="empty-note">다른 일정은 없어요</p>
+          )}
         </>
       )}
 

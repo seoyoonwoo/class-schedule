@@ -1,10 +1,8 @@
 import { formatSpan, statusLabel } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 
-export default function EventList({ events, onSelect, emptyText }) {
-  if (events.length === 0) {
-    return <p className="empty-note">{emptyText}</p>
-  }
+export default function EventList({ events, onSelect }) {
+  if (events.length === 0) return null
 
   return (
     <div>
