@@ -73,6 +73,14 @@ export function useEvents(isAdmin) {
     setData((prev) => ({ ...prev, events: [...prev.events, event] }))
   }, [])
 
+  /** 기존 일정을 통째로 바꾼다. id는 그대로 유지. */
+  const updateEvent = useCallback((id, next) => {
+    setData((prev) => ({
+      ...prev,
+      events: prev.events.map((e) => (e.id === id ? { ...next, id } : e)),
+    }))
+  }, [])
+
   const removeEvent = useCallback((id) => {
     setData((prev) => ({
       ...prev,
@@ -107,6 +115,7 @@ export function useEvents(isAdmin) {
     visible,
     pastCount: events.length - visible.length,
     addEvent,
+    updateEvent,
     removeEvent,
     removePast,
     setClassName,

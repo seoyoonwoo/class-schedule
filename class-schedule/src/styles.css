@@ -723,10 +723,57 @@ select {
   display: none;
 }
 
-.photo-pick img {
-  display: block;
-  width: 100%;
-  border-radius: 10px;
-  border: 1px solid var(--rule-strong);
+.photo-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 7px;
   margin-bottom: 9px;
+}
+
+.photo-item {
+  position: relative;
+  aspect-ratio: 1;
+}
+
+.photo-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 9px;
+  border: 1px solid var(--rule-strong);
+  display: block;
+}
+
+.photo-x {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  display: grid;
+  place-items: center;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+}
+
+/* 수정 중인 카드 */
+.card.editing {
+  border-color: var(--pen);
+  box-shadow: 0 0 0 3px rgba(43, 58, 143, 0.09);
+}
+
+/* 목록에서 누를 수 있는 부분 */
+.manage-row .info {
+  display: block;
+  text-align: left;
+  padding: 2px 0;
+  border-radius: 6px;
+}
+
+.manage-row .info.on .n {
+  color: var(--pen);
 }

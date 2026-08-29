@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { formatKorean, sortByDate, toKey, today } from '../utils/dateUtils'
 import { TYPE_NAMES, typeStyle } from '../utils/eventTypes'
 import {
@@ -9,24 +9,51 @@ import {
   saveToken,
   uploadImage,
 } from '../utils/github'
-import { shrinkToBase64 } from '../utils/image'
+import { eventImages, imageUrl, shrinkToBase64 } from '../utils/image'
 
 const NOTIFY_OPTIONS = [14, 7, 3, 1]
 
 export default function EditPanel({ store, onToast, onLock }) {
+  const formRef = useRef(null)
+
+  // 폼
+  const [editingId, setEditingId] = useState(null)
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(toKey(today()))
   const [type, setType] = useState('수행평가')
   const [detail, setDetail] = useState('')
   const [notify, setNotify] = useState([7, 3, 1])
+  const [photos, setPhotos] = useState([]) // [{ name, preview }]
   const [error, setError] = useState('')
 
-  const [image, setImage] = useState(null) // { name, preview }
-  const [uploading, setUploading] = useState(false)
-
+  // 업로드 / 발행
+  const [progress, setProgress] = useState('') // "2/3" 형태
   const [token, setTokenInput] = useState(getToken())
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+
+  function resetForm() {
+    setEditingId(null)
+    setTitle('')
+    setDate(toKey(today()))
+    setType('수행평가')
+    setDetail('')
+    setNotify([7, 3, 1])
+    setPhotos([])
+    setError('')
+  }
+
+  function startEdit(event) {
+    setEditingId(event.id)
+    setTitle(event.title)
+    setDate(event.date)
+    setType(event.type)
+    setDetail(event.detail || '')
+    setNotify(event.notifyBefore || [])
+    setPhotos(eventImages(event).map((name) => ({ name, preview: imageUrl(name) })))
+    setError('')
+    formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
 
   function toggleNotify(day) {
     setNotify((prev) =>
@@ -34,31 +61,38 @@ export default function EditPanel({ store, onToast, onLock }) {
     )
   }
 
-  async function pickImage(e) {
-    const file = e.target.files?.[0]
+  async function pickPhotos(e) {
+    const files = Array.from(e.target.files || [])
     e.target.value = '' // 같은 파일을 다시 골라도 동작하게
-    if (!file) return
+    if (files.length === 0) return
 
-    if (!file.type.startsWith('image/')) {
-      setError('사진 파일만 올릴 수 있어요.')
-      return
-    }
-
-    setUploading(true)
     setError('')
-    try {
-      // 크기를 줄여서 올리고, 일정에는 파일 이름만 저장한다
-      const base64 = await shrinkToBase64(file)
-      const name = await uploadImage(base64)
-      setImage({ name, preview: `data:image/jpeg;base64,${base64}` })
-    } catch (err) {
-      setError(err.message)
-    } finally {
-      setUploading(false)
+    const added = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file.type.startsWith('image/')) continue
+
+      setProgress(`${i + 1}/${files.length}`)
+      try {
+        const base64 = await shrinkToBase64(file)
+        const name = await uploadImage(base64)
+        added.push({ name, preview: `data:image/jpeg;base64,${base64}` })
+      } catch (err) {
+        setError(err.message)
+        break // 한 장이 실패하면 멈춘다. 앞서 올라간 건 그대로 쓴다
+      }
     }
+
+    setProgress('')
+    if (added.length > 0) setPhotos((prev) => [...prev, ...added])
   }
 
-  function handleAdd() {
+  function removePhoto(name) {
+    setPhotos((prev) => prev.filter((p) => p.name !== name))
+  }
+
+  function handleSubmit() {
     if (!title.trim()) {
       setError('일정 이름을 입력해 주세요.')
       return
@@ -68,30 +102,35 @@ export default function EditPanel({ store, onToast, onLock }) {
       return
     }
 
-    store.addEvent({
-      id: `${date}-${Math.random().toString(36).slice(2, 7)}`,
+    const payload = {
       title: title.trim(),
       type,
       date,
       detail: detail.trim(),
       notifyBefore: [...notify].sort((a, b) => b - a),
-      ...(image ? { image: image.name } : {}),
-    })
+      ...(photos.length > 0 ? { images: photos.map((p) => p.name) } : {}),
+    }
 
-    setTitle('')
-    setDetail('')
-    setImage(null)
-    setError('')
-    onToast('일정을 추가했어요')
+    if (editingId) {
+      store.updateEvent(editingId, payload)
+      onToast('수정했어요')
+    } else {
+      store.addEvent({
+        id: `${date}-${Math.random().toString(36).slice(2, 7)}`,
+        ...payload,
+      })
+      onToast('일정을 추가했어요')
+    }
+
+    resetForm()
   }
 
   async function copyJson() {
-    const text = store.asJson()
     try {
-      await navigator.clipboard.writeText(text)
+      await navigator.clipboard.writeText(store.asJson())
       onToast('JSON을 복사했어요')
     } catch {
-      window.prompt('아래 내용을 복사해서 events.json에 붙여넣으세요', text)
+      window.prompt('아래 내용을 복사해서 events.json에 붙여넣으세요', store.asJson())
     }
   }
 
@@ -108,11 +147,13 @@ export default function EditPanel({ store, onToast, onLock }) {
     }
   }
 
+  const busy = progress !== ''
+
   return (
     <>
-      <section>
-        <p className="section-label">새 일정</p>
-        <div className="card">
+      <section ref={formRef}>
+        <p className="section-label">{editingId ? '일정 수정' : '새 일정'}</p>
+        <div className={`card${editingId ? ' editing' : ''}`}>
           <div className="field">
             <label htmlFor="title">이름</label>
             <input
@@ -166,29 +207,41 @@ export default function EditPanel({ store, onToast, onLock }) {
           </div>
 
           <div className="field">
-            <label>사진 (선택)</label>
-            {image ? (
-              <div className="photo-pick">
-                <img src={image.preview} alt="첨부한 사진 미리보기" />
-                <button className="btn ghost tiny" onClick={() => setImage(null)}>
-                  사진 빼기
-                </button>
+            <label>사진 (여러 장 가능)</label>
+
+            {photos.length > 0 && (
+              <div className="photo-grid">
+                {photos.map((p) => (
+                  <div className="photo-item" key={p.name}>
+                    <img src={p.preview} alt="첨부한 사진" />
+                    <button
+                      className="photo-x"
+                      onClick={() => removePhoto(p.name)}
+                      aria-label="이 사진 빼기"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
               </div>
-            ) : (
-              <label className={`photo-drop${uploading ? ' busy' : ''}`}>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={pickImage}
-                  disabled={uploading || !getToken()}
-                />
-                {uploading
-                  ? '올리는 중...'
-                  : getToken()
-                    ? '사진 고르기'
-                    : '토큰을 먼저 등록해 주세요'}
-              </label>
             )}
+
+            <label className={`photo-drop${busy ? ' busy' : ''}`}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={pickPhotos}
+                disabled={busy || !token}
+              />
+              {busy
+                ? `올리는 중... ${progress}`
+                : !token
+                  ? '토큰을 먼저 등록해 주세요'
+                  : photos.length > 0
+                    ? '사진 더 고르기'
+                    : '사진 고르기'}
+            </label>
           </div>
 
           <div className="field">
@@ -209,9 +262,15 @@ export default function EditPanel({ store, onToast, onLock }) {
 
           {error && <p className="error">{error}</p>}
 
-          <button className="btn" disabled={uploading} onClick={handleAdd}>
-            일정 추가
+          <button className="btn" disabled={busy} onClick={handleSubmit}>
+            {editingId ? '수정 저장' : '일정 추가'}
           </button>
+
+          {editingId && (
+            <button className="btn ghost" style={{ marginTop: 9 }} onClick={resetForm}>
+              취소
+            </button>
+          )}
         </div>
       </section>
 
@@ -223,36 +282,47 @@ export default function EditPanel({ store, onToast, onLock }) {
               아직 없어요
             </p>
           ) : (
-            sortByDate(store.events).map((e) => (
-              <div className="manage-row" key={e.id}>
-                <span
-                  className="dot"
-                  style={{ background: typeStyle(e.type).hl, flex: 'none' }}
-                />
-                <span className="info">
-                  <span className="n">{e.title}</span>
-                  <span className="d">
-                    {formatKorean(e.date)}
-                    {e.image && ' · 사진'}
-                  </span>
-                </span>
-                <button
-                  className="del"
-                  onClick={() => {
-                    store.removeEvent(e.id)
-                    onToast('삭제했어요')
-                  }}
-                >
-                  삭제
-                </button>
-              </div>
-            ))
+            sortByDate(store.events).map((e) => {
+              const shots = eventImages(e).length
+              return (
+                <div className="manage-row" key={e.id}>
+                  <span
+                    className="dot"
+                    style={{ background: typeStyle(e.type).hl, flex: 'none' }}
+                  />
+                  <button
+                    className={`info${editingId === e.id ? ' on' : ''}`}
+                    onClick={() => startEdit(e)}
+                  >
+                    <span className="n">{e.title}</span>
+                    <span className="d">
+                      {formatKorean(e.date)}
+                      {shots > 0 && ` · 사진 ${shots}장`}
+                    </span>
+                  </button>
+                  <button
+                    className="del"
+                    onClick={() => {
+                      if (editingId === e.id) resetForm()
+                      store.removeEvent(e.id)
+                      onToast('삭제했어요')
+                    }}
+                  >
+                    삭제
+                  </button>
+                </div>
+              )
+            })
+          )}
+
+          {store.events.length > 0 && (
+            <p className="hint">일정을 누르면 수정할 수 있어요.</p>
           )}
 
           {store.pastCount > 0 && (
             <button
               className="btn ghost"
-              style={{ marginTop: 14 }}
+              style={{ marginTop: 12 }}
               onClick={() => {
                 store.removePast()
                 onToast(`지난 일정 ${store.pastCount}개를 정리했어요`)
@@ -328,6 +398,7 @@ export default function EditPanel({ store, onToast, onLock }) {
             className="btn ghost"
             onClick={() => {
               store.resetToFile()
+              resetForm()
               onToast('파일 내용으로 되돌렸어요')
             }}
           >

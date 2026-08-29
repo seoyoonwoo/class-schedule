@@ -1,6 +1,6 @@
 import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
-import { imageUrl } from '../utils/image'
+import { eventImages, imageUrl } from '../utils/image'
 
 export default function DdayHero({ event }) {
   if (!event) {
@@ -14,6 +14,7 @@ export default function DdayHero({ event }) {
 
   const n = dday(event.date)
   const style = typeStyle(event.type)
+  const photos = eventImages(event)
 
   return (
     <div className="card hero">
@@ -30,14 +31,15 @@ export default function DdayHero({ event }) {
 
       {event.detail && <p className="memo">{event.detail}</p>}
 
-      {event.image && (
+      {photos.map((name, i) => (
         <img
+          key={name}
           className="event-photo"
-          src={imageUrl(event.image)}
-          alt={`${event.title} 안내 사진`}
+          src={imageUrl(name)}
+          alt={`${event.title} 안내 사진 ${i + 1}`}
           loading="lazy"
         />
-      )}
+      ))}
     </div>
   )
 }

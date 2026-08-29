@@ -50,3 +50,13 @@ export function previewUrl(file) {
 export function imageUrl(name) {
   return `${import.meta.env.BASE_URL}images/${name}`
 }
+
+/**
+ * 일정에 달린 사진 목록을 꺼낸다.
+ * 예전에 한 장만 넣던 형식(image)도 그대로 읽히게 해둔다.
+ */
+export function eventImages(event) {
+  if (Array.isArray(event.images)) return event.images
+  if (event.image) return [event.image]
+  return []
+}
