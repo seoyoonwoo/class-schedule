@@ -3,7 +3,7 @@ import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 import { eventImages, imageUrl } from '../utils/image'
 
-export default function EventSheet({ date, events, onClose }) {
+export default function EventSheet({ date, events, onClose, onPhoto }) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') onClose()
@@ -43,14 +43,15 @@ export default function EventSheet({ date, events, onClose }) {
               <h2 style={{ fontSize: 20 }}>{e.title}</h2>
               {e.detail && <p className="memo">{e.detail}</p>}
 
-              {eventImages(e).map((name, i) => (
-                <img
+              {eventImages(e).map((name, i, all) => (
+                <button
                   key={name}
                   className="event-photo"
-                  src={imageUrl(name)}
-                  alt={`${e.title} 안내 사진 ${i + 1}`}
-                  loading="lazy"
-                />
+                  onClick={() => onPhoto(all, i)}
+                  aria-label={`${e.title} 사진 ${i + 1} 크게 보기`}
+                >
+                  <img src={imageUrl(name)} alt="" loading="lazy" />
+                </button>
               ))}
             </div>
           )

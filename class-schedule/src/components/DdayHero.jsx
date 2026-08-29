@@ -2,7 +2,7 @@ import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 import { eventImages, imageUrl } from '../utils/image'
 
-export default function DdayHero({ event }) {
+export default function DdayHero({ event, onPhoto }) {
   if (!event) {
     return (
       <div className="card hero empty">
@@ -32,13 +32,14 @@ export default function DdayHero({ event }) {
       {event.detail && <p className="memo">{event.detail}</p>}
 
       {photos.map((name, i) => (
-        <img
+        <button
           key={name}
           className="event-photo"
-          src={imageUrl(name)}
-          alt={`${event.title} 안내 사진 ${i + 1}`}
-          loading="lazy"
-        />
+          onClick={() => onPhoto(photos, i)}
+          aria-label={`${event.title} 사진 ${i + 1} 크게 보기`}
+        >
+          <img src={imageUrl(name)} alt="" loading="lazy" />
+        </button>
       ))}
     </div>
   )

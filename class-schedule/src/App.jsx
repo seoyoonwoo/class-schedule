@@ -4,6 +4,7 @@ import EventList from './components/EventList'
 import CalendarView from './components/CalendarView'
 import EventSheet from './components/EventSheet'
 import EditPanel from './components/EditPanel'
+import PhotoViewer from './components/PhotoViewer'
 import { useEvents } from './utils/useEvents'
 import { useAdmin } from './utils/useAdmin'
 import { formatKorean, toKey, today, upcoming } from './utils/dateUtils'
@@ -21,6 +22,11 @@ export default function App() {
   const [tab, setTab] = useState('home')
   const [selectedDate, setSelectedDate] = useState(null)
   const [toast, setToast] = useState('')
+  const [viewer, setViewer] = useState(null) // { images, index }
+
+  function openPhoto(images, index) {
+    setViewer({ images, index })
+  }
 
   const tabs = isAdmin ? [...BASE_TABS, EDIT_TAB] : BASE_TABS
 
@@ -52,7 +58,7 @@ export default function App() {
 
       {!store.loading && !store.error && tab === 'home' && (
         <>
-          <DdayHero event={next[0]} />
+          <DdayHero event={next[0]} onPhoto={openPhoto} />
           <section className="section">
             <p className="section-label">다가오는 일정</p>
             <EventList
@@ -86,6 +92,15 @@ export default function App() {
           date={selectedDate}
           events={sheetEvents}
           onClose={() => setSelectedDate(null)}
+          onPhoto={openPhoto}
+        />
+      )}
+
+      {viewer && (
+        <PhotoViewer
+          images={viewer.images}
+          index={viewer.index}
+          onClose={() => setViewer(null)}
         />
       )}
 
