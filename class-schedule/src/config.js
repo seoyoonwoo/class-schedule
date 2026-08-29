@@ -23,10 +23,8 @@ export const KEEP_PAST_DAYS = 0
  * 비워두면 편집 탭에서 'JSON 복사'만 쓸 수 있다. (README 5번 참고)
  */
 export const GITHUB = {
-  owner: '', // 예: 'seoyunwoo'
-  repo: '', // 예: 'class-schedule'
+  owner: 'seoyoonwoo',
+  repo: 'class-schedule',
   branch: 'main',
-  // 저장소 안에 폴더가 한 겹 더 있으면 그 이름을 앞에 붙인다
-  // 예) 'class-schedule/public/events.json'
-  path: 'public/events.json',
+  path: 'class-schedule/public/events.json',
 }
