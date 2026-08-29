@@ -7,7 +7,7 @@ import EditPanel from './components/EditPanel'
 import PhotoViewer from './components/PhotoViewer'
 import { useEvents } from './utils/useEvents'
 import { useAdmin } from './utils/useAdmin'
-import { dday, formatKorean, toKey, today, upcoming } from './utils/dateUtils'
+import { dday, eventDates, formatKorean, toKey, today, upcoming } from './utils/dateUtils'
 import { GROUPS, groupOf } from './utils/eventTypes'
 
 const BASE_TABS = [
@@ -21,12 +21,29 @@ export default function App() {
   const { isAdmin, lock } = useAdmin()
   const store = useEvents(isAdmin)
   const [tab, setTab] = useState('home')
-  const [selectedDate, setSelectedDate] = useState(null)
+  // 열려 있는 상세 창. { title, events } 형태.
+  // 목록에서 누르면 그 일정 하나만, 달력에서 날짜를 누르면 그 날 전부 담는다.
+  const [sheet, setSheet] = useState(null)
   const [toast, setToast] = useState('')
   const [viewer, setViewer] = useState(null) // { images, index }
 
   function openPhoto(images, index) {
     setViewer({ images, index })
+  }
+
+  /** 목록에서 일정 하나를 눌렀을 때 */
+  function openEvent(event) {
+    setSheet({ title: formatKorean(event.date), events: [event] })
+  }
+
+  /** 달력에서 날짜를 눌렀을 때 — 그 날 일정을 모두 */
+  function openDate(key) {
+    const onThatDay = store.visible.filter(
+      (e) => eventDates(e).includes(key)
+    )
+    if (onThatDay.length > 0) {
+      setSheet({ title: formatKorean(key), events: onThatDay, dateKey: key })
+    }
   }
 
   const tabs = isAdmin ? [...BASE_TABS, EDIT_TAB] : BASE_TABS
@@ -52,9 +69,6 @@ export default function App() {
   const heroes = heroPool.filter((e) => dday(e.date) === soonest)
   const heroIds = new Set(heroes.map((e) => e.id))
   const below = next.filter((e) => !heroIds.has(e.id))
-  const sheetEvents = selectedDate
-    ? store.visible.filter((e) => e.date === selectedDate)
-    : []
 
   return (
     <div className="app">
@@ -76,7 +90,7 @@ export default function App() {
               <section className="section" key={id}>
                 <p className="section-label">{label}</p>
                 {items.length > 0 ? (
-                  <EventList events={items} onSelect={setSelectedDate} />
+                  <EventList events={items} onSelect={openEvent} />
                 ) : (
                   <p className="section-empty">예정된 일정이 없어요</p>
                 )}
@@ -90,8 +104,8 @@ export default function App() {
         <>
           <CalendarView
             events={store.visible}
-            selectedDate={selectedDate}
-            onSelect={setSelectedDate}
+            selectedDate={sheet?.dateKey}
+            onSelect={openDate}
           />
           <p className="hint" style={{ textAlign: 'center', marginTop: 14 }}>
             점이 찍힌 날짜를 누르면 자세히 볼 수 있어요
@@ -103,11 +117,11 @@ export default function App() {
         <EditPanel store={store} onToast={setToast} onLock={lock} />
       )}
 
-      {sheetEvents.length > 0 && (
+      {sheet && (
         <EventSheet
-          date={selectedDate}
-          events={sheetEvents}
-          onClose={() => setSelectedDate(null)}
+          title={sheet.title}
+          events={sheet.events}
+          onClose={() => setSheet(null)}
           onPhoto={openPhoto}
         />
       )}
@@ -132,7 +146,7 @@ export default function App() {
             className={tab === t.id ? 'on' : ''}
             onClick={() => {
               setTab(t.id)
-              setSelectedDate(null)
+              setSheet(null)
             }}
           >
             <span className="glyph">{t.glyph}</span>

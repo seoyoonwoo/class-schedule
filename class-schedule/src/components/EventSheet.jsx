@@ -1,9 +1,9 @@
 import { useEffect } from 'react'
-import { formatKorean, formatSpan, isRange, statusLabel } from '../utils/dateUtils'
+import { formatSpan, isRange, statusLabel } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 import { eventImages, imageUrl } from '../utils/image'
 
-export default function EventSheet({ date, events, onClose, onPhoto }) {
+export default function EventSheet({ title, events, onClose, onPhoto }) {
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') onClose()
@@ -16,14 +16,14 @@ export default function EventSheet({ date, events, onClose, onPhoto }) {
     }
   }, [onClose])
 
-  if (!date) return null
+  if (events.length === 0) return null
 
   return (
     <>
       <div className="sheet-backdrop" onClick={onClose} />
-      <div className="sheet" role="dialog" aria-label={`${formatKorean(date)} 일정`}>
+      <div className="sheet" role="dialog" aria-label={`${title} 일정`}>
         <div className="handle" />
-        <h2>{formatKorean(date)}</h2>
+        <h2>{title}</h2>
 
         {events.map((e) => {
           const style = typeStyle(e.type)

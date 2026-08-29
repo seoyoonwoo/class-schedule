@@ -12,7 +12,7 @@ export default function EventList({ events, onSelect }) {
           <button
             key={e.id}
             className="event-row"
-            onClick={() => onSelect(e.date)}
+            onClick={() => onSelect(e)}
           >
             <span
               className="badge"
