@@ -6,7 +6,7 @@ export default function DdayHero({ event }) {
     return (
       <div className="card hero empty">
         <p className="eyebrow">다음 일정</p>
-        <p className="title">예정된 일정이 없어요. 편집 탭에서 추가해 보세요.</p>
+        <p className="title">예정된 일정이 없어요.</p>
       </div>
     )
   }
