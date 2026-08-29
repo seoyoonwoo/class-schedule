@@ -66,19 +66,6 @@
       "images": [
         "1788027967646-gvmzx.jpg"
       ]
-    },
-    {
-      "id": "2026-09-03-z2dvd",
-      "title": "test",
-      "type": "수행평가",
-      "date": "2026-09-03",
-      "detail": "",
-      "notifyBefore": [
-        7,
-        3,
-        1
-      ],
-      "updatedAt": 1788030943389
     }
   ]
 }
