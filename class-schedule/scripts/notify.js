@@ -10,7 +10,7 @@ import { dirname, join } from 'node:path'
 
 const here = dirname(fileURLToPath(import.meta.url))
 const data = JSON.parse(
-  readFileSync(join(here, '..', 'src', 'data', 'events.json'), 'utf-8')
+  readFileSync(join(here, '..', 'public', 'events.json'), 'utf-8')
 )
 
 const WEEKDAY = ['일', '월', '화', '수', '목', '금', '토']

@@ -47,7 +47,10 @@ export default function App() {
         <span className="date">{formatKorean(toKey(today()))}</span>
       </header>
 
-      {tab === 'home' && (
+      {store.loading && <p className="empty-note">불러오는 중...</p>}
+      {store.error && <p className="empty-note">{store.error}</p>}
+
+      {!store.loading && !store.error && tab === 'home' && (
         <>
           <DdayHero event={next[0]} />
           <section className="section">
@@ -61,7 +64,7 @@ export default function App() {
         </>
       )}
 
-      {tab === 'calendar' && (
+      {!store.loading && !store.error && tab === 'calendar' && (
         <>
           <CalendarView
             events={store.visible}
@@ -74,7 +77,7 @@ export default function App() {
         </>
       )}
 
-      {tab === 'edit' && isAdmin && (
+      {!store.loading && !store.error && tab === 'edit' && isAdmin && (
         <EditPanel store={store} onToast={setToast} onLock={lock} />
       )}
 
