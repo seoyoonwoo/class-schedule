@@ -1,14 +1,14 @@
 import { useRef, useState } from 'react'
 import {
   datesBetween,
-  dayOf,
+  eventDates,
+  formatKorean,
   formatSpan,
-  isWeekend,
   sortByDate,
   toKey,
   today,
-  weekdayOf,
 } from '../utils/dateUtils'
+import DayMultiPicker from './DayMultiPicker'
 import { TYPE_NAMES, typeStyle } from '../utils/eventTypes'
 import {
   clearToken,
@@ -29,8 +29,8 @@ export default function EditPanel({ store, onToast, onLock }) {
   const [editingId, setEditingId] = useState(null)
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(toKey(today()))
-  const [endDate, setEndDate] = useState('')
-  const [excluded, setExcluded] = useState([]) // 기간 안에서 안 하는 날
+  const [multi, setMulti] = useState(false)
+  const [picked, setPicked] = useState([]) // 여러 날일 때 실제로 하는 날들
   const [type, setType] = useState('수행평가')
   const [detail, setDetail] = useState('')
   const [notify, setNotify] = useState([7, 3, 1])
@@ -47,8 +47,8 @@ export default function EditPanel({ store, onToast, onLock }) {
     setEditingId(null)
     setTitle('')
     setDate(toKey(today()))
-    setEndDate('')
-    setExcluded([])
+    setMulti(false)
+    setPicked([])
     setType('수행평가')
     setDetail('')
     setNotify([7, 3, 1])
@@ -60,8 +60,9 @@ export default function EditPanel({ store, onToast, onLock }) {
     setEditingId(event.id)
     setTitle(event.title)
     setDate(event.date)
-    setEndDate(event.endDate && event.endDate > event.date ? event.endDate : '')
-    setExcluded(event.excludeDates || [])
+    const days = eventDates(event)
+    setMulti(days.length > 1)
+    setPicked(days)
     setType(event.type)
     setDetail(event.detail || '')
     setNotify(event.notifyBefore || [])
@@ -70,14 +71,18 @@ export default function EditPanel({ store, onToast, onLock }) {
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
 
-  // 시작일~끝일 사이의 모든 날짜. 끝일이 없으면 빈 배열.
-  const rangeDays =
-    endDate !== '' && endDate > date ? datesBetween(date, endDate) : []
+  const sorted = [...picked].sort()
 
   function toggleDay(key) {
-    setExcluded((prev) =>
+    setPicked((prev) =>
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     )
+    if (error) setError('')
+  }
+
+  function toggleMulti(on) {
+    setMulti(on)
+    setPicked(on ? [date] : [])
     if (error) setError('')
   }
 
@@ -123,29 +128,35 @@ export default function EditPanel({ store, onToast, onLock }) {
       setError('일정 이름을 입력해 주세요.')
       return
     }
-    if (!date) {
+    if (!multi && !date) {
       setError('날짜를 선택해 주세요.')
       return
     }
-    if (endDate !== '' && endDate < date) {
-      setError('끝나는 날이 시작일보다 빨라요.')
+    if (multi && sorted.length === 0) {
+      setError('날짜를 하나 이상 골라 주세요.')
       return
     }
-    if (rangeDays.length > 0 && rangeDays.every((k) => excluded.includes(k))) {
-      setError('적어도 하루는 켜 두어야 해요.')
-      return
+
+    // 고른 날짜들을 시작일 + 끝일 + 쉬는 날 형태로 바꿔 저장한다.
+    // 화면 쪽 코드는 이 형태만 알면 되니까 단순하게 유지된다.
+    let span = { date }
+    if (multi) {
+      const start = sorted[0]
+      const end = sorted[sorted.length - 1]
+      const gaps = datesBetween(start, end).filter((k) => !picked.includes(k))
+      span = {
+        date: start,
+        ...(end > start ? { endDate: end } : {}),
+        ...(gaps.length > 0 ? { excludeDates: gaps } : {}),
+      }
     }
 
     const payload = {
       title: title.trim(),
       type,
-      date,
+      ...span,
       detail: detail.trim(),
       notifyBefore: [...notify].sort((a, b) => b - a),
-      ...(endDate !== '' && endDate > date ? { endDate } : {}),
-      ...(rangeDays.length > 0 && excluded.length > 0
-        ? { excludeDates: excluded.filter((k) => rangeDays.includes(k)).sort() }
-        : {}),
       ...(photos.length > 0 ? { images: photos.map((p) => p.name) } : {}),
     }
 
@@ -154,7 +165,7 @@ export default function EditPanel({ store, onToast, onLock }) {
       onToast('수정했어요')
     } else {
       store.addEvent({
-        id: `${date}-${Math.random().toString(36).slice(2, 7)}`,
+        id: `${span.date}-${Math.random().toString(36).slice(2, 7)}`,
         ...payload,
       })
       onToast('일정을 추가했어요')
@@ -206,75 +217,46 @@ export default function EditPanel({ store, onToast, onLock }) {
           </div>
 
           <div className="field">
-            <label htmlFor="date">{endDate !== '' ? '시작일' : '날짜'}</label>
-            <input
-              id="date"
-              type="date"
-              value={date}
-              onChange={(e) => {
-                setDate(e.target.value)
-                if (error) setError('')
-              }}
-            />
-          </div>
-
-          <div className="field">
             <label className="row-label">
               <span>여러 날 이어지는 일정</span>
               <input
                 type="checkbox"
-                checked={endDate !== ''}
-                onChange={(e) => setEndDate(e.target.checked ? date : '')}
+                checked={multi}
+                onChange={(e) => toggleMulti(e.target.checked)}
               />
             </label>
-            {endDate !== '' && (
+
+            {multi ? (
+              <>
+                <DayMultiPicker
+                  picked={picked}
+                  onToggle={toggleDay}
+                  color={typeStyle(type).hl}
+                />
+                <p className="pick-summary">
+                  {sorted.length === 0
+                    ? '날짜를 눌러서 골라 주세요'
+                    : `${sorted.length}일 선택 · ${formatKorean(sorted[0])}${
+                        sorted.length > 1
+                          ? ` ~ ${formatKorean(sorted[sorted.length - 1])}`
+                          : ''
+                      }`}
+                </p>
+                <p className="hint">
+                  시험이 있는 날만 눌러서 켜세요. 주말이나 공휴일처럼 쉬는 날은
+                  그냥 두면 달력에서 비워집니다.
+                </p>
+              </>
+            ) : (
               <input
+                id="date"
                 type="date"
-                value={endDate}
-                min={date}
+                value={date}
                 onChange={(e) => {
-                  const v = e.target.value
-                  setEndDate(v)
-                  // 주말은 보통 안 하니까 미리 꺼둔다. 눌러서 다시 켤 수 있다.
-                  if (v && v > date) setExcluded(datesBetween(date, v).filter(isWeekend))
+                  setDate(e.target.value)
                   if (error) setError('')
                 }}
               />
-            )}
-            {rangeDays.length > 1 && (
-              <>
-                <p className="pick-label">실제로 하는 날만 켜 두세요</p>
-
-                {rangeDays.length <= 45 ? (
-                  <div className="day-picker">
-                    {rangeDays.map((key) => {
-                      const on = !excluded.includes(key)
-                      return (
-                        <button
-                          key={key}
-                          className={`day-chip${on ? ' on' : ''}`}
-                          style={on ? { background: typeStyle(type).hl } : undefined}
-                          onClick={() => toggleDay(key)}
-                          aria-pressed={on}
-                        >
-                          <span className="dnum">{dayOf(key)}</span>
-                          <span className="dwd">{weekdayOf(key)}</span>
-                        </button>
-                      )
-                    })}
-                  </div>
-                ) : (
-                  <p className="hint">
-                    기간이 너무 길어서 날짜를 하나씩 고를 수 없어요. 전부 하는
-                    걸로 처리됩니다.
-                  </p>
-                )}
-
-                <p className="hint">
-                  주말은 미리 꺼 뒀어요. 공휴일이나 시험이 없는 날도 눌러서 끄면
-                  달력에서 그 날만 비워집니다.
-                </p>
-              </>
             )}
           </div>
 
