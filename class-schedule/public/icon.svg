@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192">
+  <rect width="192" height="192" rx="42" fill="#F4F6F9"/>
+  <g stroke="#DDE2EC" stroke-width="2">
+    <path d="M48 24V168M96 24V168M144 24V168M24 48H168M24 96H168M24 144H168"/>
+  </g>
+  <rect x="34" y="78" width="124" height="36" rx="4" fill="#FFE86B"/>
+  <text x="96" y="107" font-family="Arial Black, sans-serif" font-size="38" font-weight="900" text-anchor="middle" fill="#1A1C22">D-3</text>
+</svg>

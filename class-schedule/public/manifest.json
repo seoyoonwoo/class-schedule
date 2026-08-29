@@ -1,0 +1,13 @@
+{
+  "name": "우리 반 일정",
+  "short_name": "반 일정",
+  "description": "수행평가와 학급 행사 일정을 한눈에",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#F4F6F9",
+  "theme_color": "#F4F6F9",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "./icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
