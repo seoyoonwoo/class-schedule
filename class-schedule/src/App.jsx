@@ -6,6 +6,7 @@ import EventSheet from './components/EventSheet'
 import EditPanel from './components/EditPanel'
 import PhotoViewer from './components/PhotoViewer'
 import { useEvents } from './utils/useEvents'
+import { useSeen } from './utils/useSeen'
 import { useAdmin } from './utils/useAdmin'
 import { dday, eventDates, formatKorean, toKey, today, upcoming } from './utils/dateUtils'
 import { GROUPS, groupOf } from './utils/eventTypes'
@@ -20,6 +21,7 @@ const EDIT_TAB = { id: 'edit', label: '편집', glyph: '✎' }
 export default function App() {
   const { isAdmin, lock } = useAdmin()
   const store = useEvents(isAdmin)
+  const isNew = useSeen(store.visible)
   const [tab, setTab] = useState('home')
   // 열려 있는 상세 창. { title, events } 형태.
   // 목록에서 누르면 그 일정 하나만, 달력에서 날짜를 누르면 그 날 전부 담는다.
@@ -82,7 +84,7 @@ export default function App() {
 
       {!store.loading && !store.error && tab === 'home' && (
         <>
-          <DdayHero events={heroes} onPhoto={openPhoto} />
+          <DdayHero events={heroes} onPhoto={openPhoto} isNew={isNew} />
 
           {GROUPS.map(({ id, label }) => {
             const items = below.filter((e) => groupOf(e.type) === id)
@@ -90,7 +92,7 @@ export default function App() {
               <section className="section" key={id}>
                 <p className="section-label">{label}</p>
                 {items.length > 0 ? (
-                  <EventList events={items} onSelect={openEvent} />
+                  <EventList events={items} onSelect={openEvent} isNew={isNew} />
                 ) : (
                   <p className="section-empty">예정된 일정이 없어요</p>
                 )}

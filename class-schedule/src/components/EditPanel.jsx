@@ -157,6 +157,8 @@ export default function EditPanel({ store, onToast, onLock }) {
       ...span,
       detail: detail.trim(),
       notifyBefore: [...notify].sort((a, b) => b - a),
+      // 내용이 바뀌면 친구들 화면에 NEW가 다시 붙는다
+      updatedAt: Date.now(),
       ...(photos.length > 0 ? { images: photos.map((p) => p.name) } : {}),
     }
 
@@ -281,7 +283,8 @@ export default function EditPanel({ store, onToast, onLock }) {
             <textarea
               id="detail"
               value={detail}
-              placeholder="준비물, 범위, 주의할 점"
+              placeholder={'준비물, 범위, 주의할 점\n줄을 바꿔서 여러 줄로 쓸 수 있어요'}
+              rows={4}
               onChange={(e) => setDetail(e.target.value)}
             />
           </div>

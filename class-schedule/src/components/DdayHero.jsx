@@ -25,7 +25,7 @@ function PhotoButton({ event, onPhoto }) {
  * 같은 날에 일정이 여러 개면 남은 날짜를 한 번만 크게 쓰고 그 아래에 모두 늘어놓는다.
  * 하나만 보여주면 나머지를 놓칠 수 있어서다.
  */
-export default function DdayHero({ events, onPhoto }) {
+export default function DdayHero({ events, onPhoto, isNew }) {
   if (!events || events.length === 0) {
     return (
       <div className="card hero empty">
@@ -53,6 +53,7 @@ export default function DdayHero({ events, onPhoto }) {
         <p className="eyebrow">다음 일정</p>
 
         <h2 className="title">
+          {isNew?.(lead) && <span className="new-dot">NEW</span>}
           <span className="hl hl-swipe" style={{ '--hl': typeStyle(lead.type).hl }}>
             {lead.title}
           </span>
@@ -78,6 +79,7 @@ export default function DdayHero({ events, onPhoto }) {
         {events.map((e) => (
           <div className="hero-item" key={e.id}>
             <h2 className="title">
+              {isNew?.(e) && <span className="new-dot">NEW</span>}
               <span className="hl hl-swipe" style={{ '--hl': typeStyle(e.type).hl }}>
                 {e.title}
               </span>

@@ -200,6 +200,8 @@ select {
   font-family: var(--font-hand);
   font-size: 21px;
   line-height: 1.45;
+  /* 입력할 때 누른 줄바꿈을 그대로 보여준다 */
+  white-space: pre-wrap;
   color: var(--ink-soft);
   margin: 14px 0 0;
   padding-top: 14px;
@@ -465,6 +467,7 @@ select {
   font-family: var(--font-hand);
   font-size: 20px;
   line-height: 1.5;
+  white-space: pre-wrap;
   color: var(--ink-soft);
   margin: 8px 0 0;
   word-break: keep-all;
@@ -1406,4 +1409,27 @@ select {
   flex: none;
   font-size: 18px;
   color: var(--ink-faint);
+}
+
+/* ---------- 안 본 공지 표시 ---------- */
+
+.new-dot {
+  display: inline-block;
+  vertical-align: middle;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: #fff;
+  background: #e0413a;
+  padding: 3px 5px 4px;
+  border-radius: 5px;
+  margin-right: 6px;
+  transform: translateY(-1px);
+}
+
+.hero .title .new-dot {
+  font-size: 11px;
+  padding: 4px 6px 5px;
+  margin-right: 8px;
 }
