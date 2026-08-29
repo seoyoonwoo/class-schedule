@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { dday } from './dateUtils'
+import { dday, endDateOf } from './dateUtils'
 import { KEEP_PAST_DAYS } from '../config'
 
 const STORAGE_KEY = 'class-schedule:v1'
@@ -92,7 +92,7 @@ export function useEvents(isAdmin) {
   const removePast = useCallback(() => {
     setData((prev) => ({
       ...prev,
-      events: prev.events.filter((e) => dday(e.date) >= -KEEP_PAST_DAYS),
+      events: prev.events.filter((e) => dday(endDateOf(e)) >= -KEEP_PAST_DAYS),
     }))
   }, [])
 
@@ -105,7 +105,7 @@ export function useEvents(isAdmin) {
   }, [fileData])
 
   const events = data?.events || []
-  const visible = events.filter((e) => dday(e.date) >= -KEEP_PAST_DAYS)
+  const visible = events.filter((e) => dday(endDateOf(e)) >= -KEEP_PAST_DAYS)
 
   return {
     loading: !data && !error,

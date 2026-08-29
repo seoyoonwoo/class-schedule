@@ -1,8 +1,53 @@
 import { useState } from 'react'
-import { buildMonthGrid, formatMonth, groupByDate, today } from '../utils/dateUtils'
+import {
+  addDays,
+  buildMonthGrid,
+  eventDates,
+  formatMonth,
+  isRange,
+  today,
+} from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
+
+/**
+ * 날짜별로 무엇을 그릴지 미리 계산한다.
+ * 하루짜리는 점, 여러 날짜리는 가로로 이어지는 띠로 그린다.
+ */
+function buildDayMap(events) {
+  const map = {}
+
+  function slot(key) {
+    if (!map[key]) map[key] = { dots: [], bands: [] }
+    return map[key]
+  }
+
+  for (const e of events) {
+    const color = typeStyle(e.type).hl
+
+    if (!isRange(e)) {
+      slot(e.date).dots.push({ id: e.id, color })
+      continue
+    }
+
+    // 실제 진행하는 날만. 주말을 빼면 중간이 끊기는데,
+    // 앞뒤 날짜가 있는지로 모서리를 정하면 알아서 두 토막으로 그려진다.
+    const days = eventDates(e)
+    const set = new Set(days)
+
+    for (const key of days) {
+      slot(key).bands.push({
+        id: e.id,
+        color,
+        first: !set.has(addDays(key, -1)),
+        last: !set.has(addDays(key, 1)),
+      })
+    }
+  }
+
+  return map
+}
 
 export default function CalendarView({ events, selectedDate, onSelect }) {
   const now = today()
@@ -11,7 +56,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
     month: now.getMonth(),
   })
 
-  const byDate = groupByDate(events)
+  const dayMap = buildDayMap(events)
   const cells = buildMonthGrid(cursor.year, cursor.month)
 
   function shift(delta) {
@@ -21,14 +66,14 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
     })
   }
 
-  function goToday() {
-    setCursor({ year: now.getFullYear(), month: now.getMonth() })
-  }
-
   return (
     <div className="card">
       <div className="cal-head">
-        <button className="month" onClick={goToday} aria-label="이번 달로 이동">
+        <button
+          className="month"
+          onClick={() => setCursor({ year: now.getFullYear(), month: now.getMonth() })}
+          aria-label="이번 달로 이동"
+        >
           {formatMonth(cursor.year, cursor.month)}
         </button>
         <div className="cal-nav">
@@ -49,13 +94,15 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
 
       <div className="cal-grid">
         {cells.map((c) => {
-          const dayEvents = byDate[c.key] || []
+          const day = dayMap[c.key] || { dots: [], bands: [] }
+          const count = day.dots.length + day.bands.length
+
           const classes = [
             'cal-cell',
             c.inMonth ? '' : 'out',
             c.weekday === 0 ? 'sun' : '',
             c.isToday ? 'today' : '',
-            dayEvents.length > 0 ? 'has-event' : '',
+            count > 0 ? 'has-event' : '',
             selectedDate === c.key ? 'selected' : '',
           ]
             .filter(Boolean)
@@ -65,20 +112,27 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
             <button
               key={c.key}
               className={classes}
-              disabled={dayEvents.length === 0}
+              disabled={count === 0}
               onClick={() => onSelect(c.key)}
-              aria-label={`${c.day}일${
-                dayEvents.length ? `, 일정 ${dayEvents.length}개` : ''
-              }`}
+              aria-label={`${c.day}일${count ? `, 일정 ${count}개` : ''}`}
             >
               <span className="num">{c.day}</span>
-              {dayEvents.length > 0 && (
+
+              {day.dots.length > 0 && (
                 <span className="dots">
-                  {dayEvents.slice(0, 3).map((e) => (
+                  {day.dots.slice(0, 3).map((d) => (
+                    <span key={d.id} className="dot" style={{ background: d.color }} />
+                  ))}
+                </span>
+              )}
+
+              {day.bands.length > 0 && (
+                <span className="bands">
+                  {day.bands.slice(0, 2).map((b) => (
                     <span
-                      key={e.id}
-                      className="dot"
-                      style={{ background: typeStyle(e.type).hl }}
+                      key={b.id}
+                      className={`band${b.first ? ' first' : ''}${b.last ? ' last' : ''}`}
+                      style={{ background: b.color }}
                     />
                   ))}
                 </span>

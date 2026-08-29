@@ -1,4 +1,4 @@
-import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
+import { dday, endDateOf, formatSpan, isRunning, statusLabel } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 import { eventImages, imageUrl } from '../utils/image'
 
@@ -12,8 +12,10 @@ export default function DdayHero({ event, onPhoto }) {
     )
   }
 
-  const n = dday(event.date)
   const style = typeStyle(event.type)
+  const label = statusLabel(event)
+  const running = isRunning(event) && label === '진행 중'
+  const urgent = running || (dday(event.date) <= 3 && dday(endDateOf(event)) >= 0)
   const photos = eventImages(event)
 
   return (
@@ -26,8 +28,10 @@ export default function DdayHero({ event, onPhoto }) {
         </span>
       </h2>
 
-      <p className={`dday${n <= 3 ? ' urgent' : ''}`}>{ddayLabel(n)}</p>
-      <p className="when">{formatKorean(event.date)}</p>
+      <p className={`dday${urgent ? ' urgent' : ''}${running ? ' running' : ''}`}>
+        {label}
+      </p>
+      <p className="when">{formatSpan(event)}</p>
 
       {event.detail && <p className="memo">{event.detail}</p>}
 

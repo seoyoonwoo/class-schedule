@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
+import { formatKorean, formatSpan, isRange, statusLabel } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 import { eventImages, imageUrl } from '../utils/image'
 
@@ -37,10 +37,11 @@ export default function EventSheet({ date, events, onClose, onPhoto }) {
                   {e.type}
                 </span>
                 <span className="tag" style={{ background: '#eef0f5' }}>
-                  {ddayLabel(dday(e.date))}
+                  {statusLabel(e)}
                 </span>
               </div>
               <h2 style={{ fontSize: 20 }}>{e.title}</h2>
+              {isRange(e) && <p className="span-line">{formatSpan(e)}</p>}
               {e.detail && <p className="memo">{e.detail}</p>}
 
               {eventImages(e).map((name, i, all) => (

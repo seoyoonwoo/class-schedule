@@ -1,4 +1,4 @@
-import { dday, ddayLabel, formatKorean } from '../utils/dateUtils'
+import { formatSpan, statusLabel } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
 
 export default function EventList({ events, onSelect, emptyText }) {
@@ -20,12 +20,12 @@ export default function EventList({ events, onSelect, emptyText }) {
               className="badge"
               style={{ background: style.hl, color: style.ink }}
             >
-              {ddayLabel(dday(e.date))}
+              {statusLabel(e)}
             </span>
             <span className="body">
               <span className="name">{e.title}</span>
               <span className="sub">
-                {formatKorean(e.date)} · {e.type}
+                {formatSpan(e)} · {e.type}
               </span>
             </span>
           </button>

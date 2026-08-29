@@ -910,3 +910,63 @@ select {
 .viewer-nav:active {
   background: rgba(255, 255, 255, 0.24);
 }
+
+/* ---------- 여러 날 이어지는 일정 ---------- */
+
+/* 달력의 띠. 칸 사이 간격까지 덮어서 하나로 이어져 보이게 한다 */
+.bands {
+  width: calc(100% + 6px);
+  margin: auto -3px 5px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.band {
+  height: 5px;
+}
+
+.band.first {
+  border-radius: 3px 0 0 3px;
+  margin-left: 3px;
+}
+
+.band.last {
+  border-radius: 0 3px 3px 0;
+  margin-right: 3px;
+}
+
+.band.first.last {
+  border-radius: 3px;
+}
+
+/* 진행 중일 때는 글자가 길어지니 조금 작게 */
+.hero .dday.running {
+  font-size: 52px;
+  letter-spacing: -0.01em;
+}
+
+.span-line {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  margin: 6px 0 0;
+}
+
+/* 체크박스가 붙은 라벨 */
+.row-label {
+  display: flex !important;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  cursor: pointer;
+  margin-bottom: 8px !important;
+}
+
+.row-label input[type='checkbox'] {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  accent-color: var(--pen);
+  margin: 0;
+}

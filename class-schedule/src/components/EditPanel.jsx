@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { formatKorean, sortByDate, toKey, today } from '../utils/dateUtils'
+import { formatSpan, hasWeekend, sortByDate, toKey, today } from '../utils/dateUtils'
 import { TYPE_NAMES, typeStyle } from '../utils/eventTypes'
 import {
   clearToken,
@@ -20,6 +20,8 @@ export default function EditPanel({ store, onToast, onLock }) {
   const [editingId, setEditingId] = useState(null)
   const [title, setTitle] = useState('')
   const [date, setDate] = useState(toKey(today()))
+  const [endDate, setEndDate] = useState('')
+  const [skipWeekends, setSkipWeekends] = useState(false)
   const [type, setType] = useState('수행평가')
   const [detail, setDetail] = useState('')
   const [notify, setNotify] = useState([7, 3, 1])
@@ -36,6 +38,8 @@ export default function EditPanel({ store, onToast, onLock }) {
     setEditingId(null)
     setTitle('')
     setDate(toKey(today()))
+    setEndDate('')
+    setSkipWeekends(false)
     setType('수행평가')
     setDetail('')
     setNotify([7, 3, 1])
@@ -47,6 +51,8 @@ export default function EditPanel({ store, onToast, onLock }) {
     setEditingId(event.id)
     setTitle(event.title)
     setDate(event.date)
+    setEndDate(event.endDate && event.endDate > event.date ? event.endDate : '')
+    setSkipWeekends(Boolean(event.skipWeekends))
     setType(event.type)
     setDetail(event.detail || '')
     setNotify(event.notifyBefore || [])
@@ -101,6 +107,10 @@ export default function EditPanel({ store, onToast, onLock }) {
       setError('날짜를 선택해 주세요.')
       return
     }
+    if (endDate !== '' && endDate < date) {
+      setError('끝나는 날이 시작일보다 빨라요.')
+      return
+    }
 
     const payload = {
       title: title.trim(),
@@ -108,6 +118,8 @@ export default function EditPanel({ store, onToast, onLock }) {
       date,
       detail: detail.trim(),
       notifyBefore: [...notify].sort((a, b) => b - a),
+      ...(endDate !== '' && endDate > date ? { endDate } : {}),
+      ...(endDate !== '' && endDate > date && skipWeekends ? { skipWeekends: true } : {}),
       ...(photos.length > 0 ? { images: photos.map((p) => p.name) } : {}),
     }
 
@@ -168,7 +180,7 @@ export default function EditPanel({ store, onToast, onLock }) {
           </div>
 
           <div className="field">
-            <label htmlFor="date">날짜</label>
+            <label htmlFor="date">{endDate !== '' ? '시작일' : '날짜'}</label>
             <input
               id="date"
               type="date"
@@ -178,6 +190,48 @@ export default function EditPanel({ store, onToast, onLock }) {
                 if (error) setError('')
               }}
             />
+          </div>
+
+          <div className="field">
+            <label className="row-label">
+              <span>여러 날 이어지는 일정</span>
+              <input
+                type="checkbox"
+                checked={endDate !== ''}
+                onChange={(e) => setEndDate(e.target.checked ? date : '')}
+              />
+            </label>
+            {endDate !== '' && (
+              <input
+                type="date"
+                value={endDate}
+                min={date}
+                onChange={(e) => {
+                  const v = e.target.value
+                  setEndDate(v)
+                  // 주말이 끼어 있으면 보통 시험이 없으니 미리 켜둔다
+                  if (v && v > date) setSkipWeekends(hasWeekend(date, v))
+                  if (error) setError('')
+                }}
+              />
+            )}
+            {endDate !== '' && (
+              <>
+                <label className="row-label" style={{ marginTop: 10 }}>
+                  <span>주말은 빼고 표시</span>
+                  <input
+                    type="checkbox"
+                    checked={skipWeekends}
+                    onChange={(e) => setSkipWeekends(e.target.checked)}
+                  />
+                </label>
+                <p className="hint">
+                  시험 기간에 주말이 끼면 켜 두세요. 달력에서 토·일을 건너뛰고
+                  띠가 두 토막으로 그려져요. 캠프나 축제처럼 주말에도 하는
+                  일정이면 꺼 두면 됩니다.
+                </p>
+              </>
+            )}
           </div>
 
           <div className="field">
@@ -296,7 +350,7 @@ export default function EditPanel({ store, onToast, onLock }) {
                   >
                     <span className="n">{e.title}</span>
                     <span className="d">
-                      {formatKorean(e.date)}
+                      {formatSpan(e)}
                       {shots > 0 && ` · 사진 ${shots}장`}
                     </span>
                   </button>
