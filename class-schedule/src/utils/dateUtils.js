@@ -166,12 +166,20 @@ export function dayNumber(event) {
   return i < 0 ? 0 : i + 1
 }
 
-/** 시작일과 끝일 사이에 주말이 끼어 있는지 (체크박스 기본값 정할 때 쓴다) */
-export function hasWeekend(start, end) {
-  return datesBetween(start, end).some((key) => {
-    const w = parseDate(key).getDay()
-    return w === 0 || w === 6
-  })
+/** 토요일이나 일요일인지 */
+export function isWeekend(key) {
+  const w = parseDate(key).getDay()
+  return w === 0 || w === 6
+}
+
+/** 요일 한 글자. "2026-10-14" -> "수" */
+export function weekdayOf(key) {
+  return ['일', '월', '화', '수', '목', '금', '토'][parseDate(key).getDay()]
+}
+
+/** 날짜 키에서 일(day)만. "2026-10-14" -> 14 */
+export function dayOf(key) {
+  return parseDate(key).getDate()
 }
 
 /** 히어로와 뱃지에 쓸 문구 */
