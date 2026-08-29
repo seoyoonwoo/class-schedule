@@ -2,17 +2,17 @@
   "className": "우리 반",
   "events": [
     {
-      "id": "2026-10-08-tarvx",
       "title": "2학기 1차 중간고사",
       "type": "시험",
-      "date": "2026-10-08",
+      "date": "2026-10-12",
       "detail": "",
       "notifyBefore": [
         14,
         7,
         3,
         1
-      ]
+      ],
+      "id": "2026-10-08-tarvx"
     },
     {
       "title": "영어 수행평가",
