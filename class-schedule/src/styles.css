@@ -1698,3 +1698,98 @@ select {
   white-space: pre-wrap;
   word-break: keep-all;
 }
+
+/* ---------- 시간표 ---------- */
+
+.week-range {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-faint);
+  margin-top: 3px;
+  letter-spacing: 0;
+}
+
+.tt {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.tt-row {
+  display: grid;
+  grid-template-columns: 22px repeat(5, 1fr);
+  gap: 4px;
+}
+
+.tt-period {
+  display: grid;
+  place-items: center;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.tt-head .tt-day {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 5px 0 8px;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--ink-faint);
+}
+
+.tt-head .tt-day em {
+  font-style: normal;
+  font-size: 11px;
+  font-weight: 600;
+  color: #c3c8d4;
+}
+
+.tt-head .tt-day.now {
+  color: var(--pen);
+}
+
+.tt-head .tt-day.now em {
+  color: var(--pen);
+}
+
+.tt-cell {
+  display: grid;
+  place-items: center;
+  text-align: center;
+  min-height: 46px;
+  padding: 5px 3px;
+  border-radius: 8px;
+  border: 1px solid var(--rule-strong);
+  background: #fff;
+  font-size: 11.5px;
+  font-weight: 600;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  word-break: keep-all;
+  color: var(--ink);
+}
+
+.tt-cell.blank {
+  background: transparent;
+  border-style: dashed;
+  border-color: var(--rule);
+}
+
+/* 오늘 칸은 형광펜으로 칠한 것처럼 */
+.tt-cell.now {
+  background: #fffbe6;
+  border-color: #efdc8a;
+}
+
+.tt-cell.now.blank {
+  background: transparent;
+}
+
+.cal-nav button:disabled {
+  opacity: 0.32;
+  cursor: default;
+}

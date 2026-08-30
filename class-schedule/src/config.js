@@ -28,3 +28,12 @@ export const GITHUB = {
   branch: 'main',
   path: 'class-schedule/public/events.json',
 }
+
+
+export const SCHOOL = {
+  key: '080758105f74473d88e777010e860f81',
+  office: 'J10',
+  code: '7530138',
+  grade: 1,
+  classNo: 11,
+}

@@ -7,9 +7,11 @@ import EditPanel from './components/EditPanel'
 import PhotoViewer from './components/PhotoViewer'
 import NoticeSection from './components/NoticeSection'
 import NoticeView from './components/NoticeView'
+import TimetableView from './components/TimetableView'
 import { useEvents } from './utils/useEvents'
 import { useSeen } from './utils/useSeen'
 import { usePullToRefresh } from './utils/usePullToRefresh'
+import { isTimetableReady } from './utils/timetable'
 import { useAdmin } from './utils/useAdmin'
 import {
   dday,
@@ -27,6 +29,9 @@ const BASE_TABS = [
   { id: 'home', label: '홈', glyph: '✦' },
   { id: 'calendar', label: '달력', glyph: '▦' },
 ]
+
+// 인증키를 넣어야 나타난다 (config.js의 SCHOOL)
+const TIMETABLE_TAB = { id: 'timetable', label: '시간표', glyph: '▤' }
 
 const EDIT_TAB = { id: 'edit', label: '편집', glyph: '✎' }
 
@@ -65,7 +70,11 @@ export default function App() {
     }
   }
 
-  const tabs = isAdmin ? [...BASE_TABS, EDIT_TAB] : BASE_TABS
+  const tabs = [
+    ...BASE_TABS,
+    ...(isTimetableReady() ? [TIMETABLE_TAB] : []),
+    ...(isAdmin ? [EDIT_TAB] : []),
+  ]
 
   // 편집 탭을 보던 중에 잠기면 홈으로 되돌린다
   useEffect(() => {
@@ -186,6 +195,8 @@ export default function App() {
           </p>
         </>
       )}
+
+      {tab === 'timetable' && <TimetableView />}
 
       {!store.loading && !store.error && tab === 'edit' && isAdmin && (
         <EditPanel store={store} onToast={setToast} onLock={lock} />
