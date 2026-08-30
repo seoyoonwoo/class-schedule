@@ -5,6 +5,27 @@ import { fetchRange, mondayOf, weekDays } from '../utils/timetable'
 const WEEKDAYS = ['월', '화', '수', '목', '금']
 
 /**
+ * 칸이 좁아서 긴 과목명은 줄여 쓴다.
+ * 원래 이름은 칸을 눌렀을 때(title)에서 볼 수 있다.
+ */
+const SHORTEN = [
+  ['과학탐구실험', '과탐실'],
+  ['자율·자치활동', '자율'],
+  ['자율자치활동', '자율'],
+  ['동아리활동', '동아리'],
+  ['진로활동', '진로'],
+  ['봉사활동', '봉사'],
+  ['창의적체험활동', '창체'],
+]
+
+function shortSubject(name) {
+  for (const [long, short] of SHORTEN) {
+    if (name.startsWith(long)) return name.replace(long, short)
+  }
+  return name
+}
+
+/**
  * 주간 시간표.
  * 학교가 나이스에 올린 걸 그대로 받아오므로 직접 입력할 게 없다.
  * 이번 주와 다음 주를 오갈 수 있다.
@@ -112,8 +133,9 @@ export default function TimetableView() {
                       className={`tt-cell${d === todayKey ? ' now' : ''}${
                         found ? '' : ' blank'
                       }`}
+                      title={found ? found.subject : ''}
                     >
-                      {found ? found.subject : ''}
+                      {found ? shortSubject(found.subject) : ''}
                     </span>
                   )
                 })}

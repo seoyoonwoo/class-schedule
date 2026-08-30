@@ -1718,8 +1718,10 @@ select {
 
 .tt-row {
   display: grid;
-  grid-template-columns: 22px repeat(5, 1fr);
-  gap: 4px;
+  /* minmax(0, 1fr)이라야 긴 과목명이 칸을 밀어내지 않는다.
+     그냥 1fr이면 내용 크기만큼 열이 넓어져 오른쪽이 잘린다. */
+  grid-template-columns: 20px repeat(5, minmax(0, 1fr));
+  gap: 3px;
 }
 
 .tt-period {
@@ -1760,17 +1762,21 @@ select {
   display: grid;
   place-items: center;
   text-align: center;
-  min-height: 46px;
-  padding: 5px 3px;
+  min-width: 0;
+  min-height: 48px;
+  padding: 5px 2px;
   border-radius: 8px;
   border: 1px solid var(--rule-strong);
   background: #fff;
-  font-size: 11.5px;
+  font-size: 10.5px;
   font-weight: 600;
-  line-height: 1.3;
-  letter-spacing: -0.02em;
-  word-break: keep-all;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
   color: var(--ink);
+  /* 긴 과목명도 칸 안에서 접히게 */
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  hyphens: none;
 }
 
 .tt-cell.blank {
