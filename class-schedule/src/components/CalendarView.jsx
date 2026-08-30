@@ -2,6 +2,8 @@ import { useState } from 'react'
 import {
   addDays,
   buildMonthGrid,
+  dday,
+  endDateOf,
   eventDates,
   formatMonth,
   isRange,
@@ -25,9 +27,11 @@ function buildDayMap(events) {
 
   for (const e of events) {
     const color = typeStyle(e.type).hl
+    // 이미 끝난 일정은 흐리게. 지워버리면 지난달에 뭐가 있었는지 알 수 없다.
+    const past = dday(endDateOf(e)) < 0
 
     if (!isRange(e)) {
-      slot(e.date).dots.push({ id: e.id, color })
+      slot(e.date).dots.push({ id: e.id, color, past })
       continue
     }
 
@@ -40,6 +44,7 @@ function buildDayMap(events) {
       slot(key).bands.push({
         id: e.id,
         color,
+        past,
         first: !set.has(addDays(key, -1)),
         last: !set.has(addDays(key, 1)),
       })
@@ -96,6 +101,9 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
         {cells.map((c) => {
           const day = dayMap[c.key] || { dots: [], bands: [] }
           const count = day.dots.length + day.bands.length
+          const allPast =
+            count > 0 &&
+            [...day.dots, ...day.bands].every((x) => x.past)
 
           const classes = [
             'cal-cell',
@@ -103,6 +111,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
             c.weekday === 0 ? 'sun' : '',
             c.isToday ? 'today' : '',
             count > 0 ? 'has-event' : '',
+            allPast ? 'past-only' : '',
             selectedDate === c.key ? 'selected' : '',
           ]
             .filter(Boolean)
@@ -121,7 +130,11 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
               {day.dots.length > 0 && (
                 <span className="dots">
                   {day.dots.slice(0, 3).map((d) => (
-                    <span key={d.id} className="dot" style={{ background: d.color }} />
+                    <span
+                      key={d.id}
+                      className={`dot${d.past ? ' past' : ''}`}
+                      style={{ background: d.color }}
+                    />
                   ))}
                 </span>
               )}
@@ -131,7 +144,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
                   {day.bands.slice(0, 2).map((b) => (
                     <span
                       key={b.id}
-                      className={`band${b.first ? ' first' : ''}${b.last ? ' last' : ''}`}
+                      className={`band${b.first ? ' first' : ''}${b.last ? ' last' : ''}${b.past ? ' past' : ''}`}
                       style={{ background: b.color }}
                     />
                   ))}

@@ -10,7 +10,7 @@
  *
  * 반드시 아무도 못 맞출 값으로 바꿔서 쓸 것. 반 이름이나 생일은 금방 들킨다.
  */
-export const ADMIN_KEY = 'change-me-1234'
+export const ADMIN_KEY = 'yunwoo-2026-x9k2'
 
 /**
  * 날짜가 지난 일정을 며칠까지 더 보여줄지.

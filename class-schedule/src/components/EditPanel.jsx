@@ -42,6 +42,7 @@ export default function EditPanel({ store, onToast, onLock }) {
   const [token, setTokenInput] = useState(getToken())
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState('')
+  const [confirmId, setConfirmId] = useState(null) // 삭제를 한 번 누른 항목
 
   function resetForm() {
     setEditingId(null)
@@ -78,6 +79,15 @@ export default function EditPanel({ store, onToast, onLock }) {
       prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
     )
     if (error) setError('')
+  }
+
+  /**
+   * 삭제는 두 번 눌러야 지워진다.
+   * 한 번 누르면 버튼이 '정말 삭제'로 바뀌고, 4초 안에 다시 누르지 않으면 되돌아간다.
+   */
+  function askDelete(id) {
+    setConfirmId(id)
+    setTimeout(() => setConfirmId((cur) => (cur === id ? null : cur)), 4000)
   }
 
   function toggleMulti(on) {
@@ -190,6 +200,7 @@ export default function EditPanel({ store, onToast, onLock }) {
     setSaveError('')
     try {
       await saveToGithub(store.asJson())
+      store.markPublished()
       onToast('올렸어요. 1분 뒤 반영돼요')
     } catch (err) {
       setSaveError(err.message)
@@ -202,6 +213,19 @@ export default function EditPanel({ store, onToast, onLock }) {
 
   return (
     <>
+      {store.dirty && (
+        <div className="dirty-bar">
+          <span>아직 반에 반영되지 않았어요</span>
+          <button
+            className="btn tiny"
+            disabled={!token || saving}
+            onClick={publish}
+          >
+            {saving ? '올리는 중' : '지금 올리기'}
+          </button>
+        </div>
+      )}
+
       <section ref={formRef}>
         <p className="section-label">{editingId ? '일정 수정' : '새 일정'}</p>
         <div className={`card${editingId ? ' editing' : ''}`}>
@@ -384,14 +408,19 @@ export default function EditPanel({ store, onToast, onLock }) {
                     </span>
                   </button>
                   <button
-                    className="del"
+                    className={`del${confirmId === e.id ? ' armed' : ''}`}
                     onClick={() => {
+                      if (confirmId !== e.id) {
+                        askDelete(e.id)
+                        return
+                      }
                       if (editingId === e.id) resetForm()
                       store.removeEvent(e.id)
+                      setConfirmId(null)
                       onToast('삭제했어요')
                     }}
                   >
-                    삭제
+                    {confirmId === e.id ? '정말 삭제' : '삭제'}
                   </button>
                 </div>
               )

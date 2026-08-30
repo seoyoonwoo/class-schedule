@@ -1433,3 +1433,63 @@ select {
   padding: 4px 6px 5px;
   margin-right: 8px;
 }
+
+/* ---------- 지난 일정 (달력) ---------- */
+
+.dot.past,
+.band.past {
+  opacity: 0.32;
+}
+
+.cal-cell.past-only {
+  background: transparent;
+  border-color: var(--rule);
+}
+
+.cal-cell.past-only .num {
+  color: var(--ink-faint);
+}
+
+/* ---------- 삭제 확인 ---------- */
+
+.del.armed {
+  background: var(--danger);
+  border-color: var(--danger);
+  color: #fff;
+}
+
+/* ---------- 아직 안 올린 변경 ---------- */
+
+.dirty-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: #fff6e0;
+  border: 1px solid #f0dca8;
+  border-radius: 12px;
+  padding: 11px 11px 11px 15px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #7a5b00;
+}
+
+.dirty-bar .btn {
+  flex: none;
+  background: #7a5b00;
+}
+
+.tabbar .glyph {
+  position: relative;
+}
+
+.tab-dot {
+  position: absolute;
+  top: -2px;
+  right: -7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--danger);
+}

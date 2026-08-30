@@ -104,6 +104,18 @@ export function useEvents(isAdmin) {
     if (fileData) setData(fileData)
   }, [fileData])
 
+  // 편집한 내용이 아직 반에 올라가지 않았는지.
+  // 초안은 이 기기에 저장돼 있어서 사라지지는 않지만,
+  // 올리기 전까지는 친구들 화면에 보이지 않는다.
+  const dirty =
+    Boolean(isAdmin && data && fileData) &&
+    JSON.stringify(data) !== JSON.stringify(fileData)
+
+  /** GitHub에 올린 직후 호출. 이제 파일과 초안이 같아진다. */
+  const markPublished = useCallback(() => {
+    setFileData(data)
+  }, [data])
+
   const events = data?.events || []
   const visible = events.filter((e) => dday(endDateOf(e)) >= -KEEP_PAST_DAYS)
 
@@ -114,6 +126,8 @@ export function useEvents(isAdmin) {
     events,
     visible,
     pastCount: events.length - visible.length,
+    dirty,
+    markPublished,
     addEvent,
     updateEvent,
     removeEvent,

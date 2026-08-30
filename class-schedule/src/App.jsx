@@ -40,9 +40,8 @@ export default function App() {
 
   /** 달력에서 날짜를 눌렀을 때 — 그 날 일정을 모두 */
   function openDate(key) {
-    const onThatDay = store.visible.filter(
-      (e) => eventDates(e).includes(key)
-    )
+    // 달력은 지난 일정도 보여주므로 전체에서 찾는다
+    const onThatDay = store.events.filter((e) => eventDates(e).includes(key))
     if (onThatDay.length > 0) {
       setSheet({ title: formatKorean(key), events: onThatDay, dateKey: key })
     }
@@ -54,6 +53,17 @@ export default function App() {
   useEffect(() => {
     if (!isAdmin && tab === 'edit') setTab('home')
   }, [isAdmin, tab])
+
+  // 아직 안 올린 변경이 있으면 창을 닫을 때 한 번 물어본다
+  useEffect(() => {
+    if (!store.dirty) return
+    function warn(e) {
+      e.preventDefault()
+      e.returnValue = ''
+    }
+    window.addEventListener('beforeunload', warn)
+    return () => window.removeEventListener('beforeunload', warn)
+  }, [store.dirty])
 
   useEffect(() => {
     if (!toast) return
@@ -105,12 +115,13 @@ export default function App() {
       {!store.loading && !store.error && tab === 'calendar' && (
         <>
           <CalendarView
-            events={store.visible}
+            events={store.events}
             selectedDate={sheet?.dateKey}
             onSelect={openDate}
           />
           <p className="hint" style={{ textAlign: 'center', marginTop: 14 }}>
-            점이 찍힌 날짜를 누르면 자세히 볼 수 있어요
+            점이 찍힌 날짜를 누르면 자세히 볼 수 있어요. 지난 일정은 흐리게
+            보여요.
           </p>
         </>
       )}
@@ -151,7 +162,10 @@ export default function App() {
               setSheet(null)
             }}
           >
-            <span className="glyph">{t.glyph}</span>
+            <span className="glyph">
+              {t.glyph}
+              {t.id === 'edit' && store.dirty && <i className="tab-dot" />}
+            </span>
             {t.label}
           </button>
         ))}
