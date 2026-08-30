@@ -7,6 +7,7 @@ import EditPanel from './components/EditPanel'
 import PhotoViewer from './components/PhotoViewer'
 import { useEvents } from './utils/useEvents'
 import { useSeen } from './utils/useSeen'
+import { usePullToRefresh } from './utils/usePullToRefresh'
 import { useAdmin } from './utils/useAdmin'
 import { dday, eventDates, formatKorean, toKey, today, upcoming } from './utils/dateUtils'
 import { GROUPS, groupOf } from './utils/eventTypes'
@@ -28,6 +29,11 @@ export default function App() {
   const [sheet, setSheet] = useState(null)
   const [toast, setToast] = useState('')
   const [viewer, setViewer] = useState(null) // { images, index }
+
+  // 상세 창이나 사진 뷰어가 떠 있으면 당겨서 새로고침을 막는다
+  const { pull, ready } = usePullToRefresh(store.refresh, Boolean(sheet || viewer))
+  const spinning = store.refreshing
+  const offset = spinning ? 56 : pull
 
   function openPhoto(images, index) {
     setViewer({ images, index })
@@ -84,7 +90,30 @@ export default function App() {
 
   return (
     <div className="app">
-      <header className="topbar">
+      <div
+        className={`pull-mark${ready ? ' ready' : ''}${spinning ? ' spinning' : ''}`}
+        style={{
+          transform: `translate(-50%, ${offset}px)`,
+          opacity: offset > 8 ? 1 : 0,
+        }}
+        aria-hidden="true"
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20">
+          <path
+            d="M20 12a8 8 0 1 1-2.34-5.66"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+          />
+          <path d="M20 3v5h-5" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+      </div>
+
+      <header
+        className="topbar"
+        style={{ transform: `translateY(${offset * 0.5}px)` }}
+      >
         <h1>{store.className} 일정</h1>
         <span className="date">{formatKorean(toKey(today()))}</span>
       </header>

@@ -12,27 +12,33 @@ export function useEvents(isAdmin) {
   const [fileData, setFileData] = useState(null) // 서버에 있는 진짜 데이터
   const [data, setData] = useState(null) // 화면에 쓰는 데이터 (관리자는 편집 초안)
   const [error, setError] = useState('')
+  const [refreshing, setRefreshing] = useState(false)
+
+  /** 서버에서 일정 파일을 다시 받아온다 */
+  const load = useCallback(async () => {
+    try {
+      const res = await fetch(`${DATA_URL}?t=${Date.now()}`, { cache: 'no-store' })
+      if (!res.ok) throw new Error(String(res.status))
+      setFileData(await res.json())
+      setError('')
+    } catch {
+      setError('일정을 불러오지 못했어요. 아래로 당겨서 다시 시도해 주세요.')
+    }
+  }, [])
 
   // 앱을 열 때마다 최신 파일을 받아온다
   useEffect(() => {
-    let alive = true
+    load()
+  }, [load])
 
-    fetch(`${DATA_URL}?t=${Date.now()}`, { cache: 'no-store' })
-      .then((res) => {
-        if (!res.ok) throw new Error(String(res.status))
-        return res.json()
-      })
-      .then((json) => {
-        if (alive) setFileData(json)
-      })
-      .catch(() => {
-        if (alive) setError('일정을 불러오지 못했어요. 새로고침해 주세요.')
-      })
-
-    return () => {
-      alive = false
-    }
-  }, [])
+  /** 화면을 아래로 당겼을 때 */
+  const refresh = useCallback(async () => {
+    setRefreshing(true)
+    await load()
+    // 너무 빨리 끝나면 새로고침이 된 건지 알 수 없어서 잠깐 붙잡아 둔다
+    await new Promise((r) => setTimeout(r, 450))
+    setRefreshing(false)
+  }, [load])
 
   // 파일이 도착했거나 편집 권한이 바뀌면 화면에 쓸 데이터를 정한다
   useEffect(() => {
@@ -122,6 +128,8 @@ export function useEvents(isAdmin) {
   return {
     loading: !data && !error,
     error,
+    refreshing,
+    refresh,
     className: data?.className || '우리 반',
     events,
     visible,

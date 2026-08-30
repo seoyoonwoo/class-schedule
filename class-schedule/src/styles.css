@@ -1466,3 +1466,56 @@ select {
   border-radius: 50%;
   background: var(--danger);
 }
+
+/* ---------- 당겨서 새로고침 ---------- */
+
+.pull-mark {
+  position: fixed;
+  top: calc(6px + env(safe-area-inset-top));
+  left: 50%;
+  z-index: 30;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1px solid var(--rule-strong);
+  box-shadow: 0 2px 10px rgba(20, 22, 28, 0.1);
+  display: grid;
+  place-items: center;
+  color: var(--ink-faint);
+  transition: opacity 0.15s ease;
+  pointer-events: none;
+}
+
+/* 놓으면 새로고침되는 상태 */
+.pull-mark.ready {
+  color: var(--pen);
+  border-color: var(--pen);
+}
+
+.pull-mark.ready svg {
+  transform: rotate(180deg);
+  transition: transform 0.2s ease;
+}
+
+.pull-mark.spinning {
+  color: var(--pen);
+  border-color: var(--pen);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pull-mark.spinning svg {
+    animation: pull-spin 0.7s linear infinite;
+  }
+}
+
+@keyframes pull-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 당기는 동안 화면이 살짝 따라 내려온다 */
+.topbar {
+  transition: transform 0.18s ease;
+}
