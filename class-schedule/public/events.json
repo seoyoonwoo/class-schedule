@@ -86,6 +86,17 @@
       "notifyBefore": [],
       "updatedAt": 1788054299480,
       "id": "2026-09-11-ha36t"
+    },
+    {
+      "id": "2026-08-30-ilpbd",
+      "title": "erorr",
+      "type": "수행평가",
+      "date": "2026-08-30",
+      "detail": "",
+      "notifyBefore": [
+        1
+      ],
+      "updatedAt": 1788056727274
     }
   ]
 }
