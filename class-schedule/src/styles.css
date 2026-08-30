@@ -238,6 +238,7 @@ select {
 .event-row .badge {
   flex: none;
   min-width: 54px;
+  white-space: nowrap;
   text-align: center;
   font-size: 13px;
   font-weight: 800;
@@ -934,9 +935,9 @@ select {
   border-radius: 3px;
 }
 
-/* 진행 중일 때는 글자가 길어지니 조금 작게 */
-.hero .dday.running {
-  font-size: 52px;
+/* '진행 중', '마지막 날'처럼 글자가 길면 조금 작게 */
+.hero .dday.wide {
+  font-size: 50px;
   letter-spacing: -0.01em;
 }
 
@@ -1168,11 +1169,6 @@ select {
   border-radius: 3px;
 }
 
-/* 진행 중일 때는 글자가 길어지니 조금 작게 */
-.hero .dday.running {
-  font-size: 52px;
-  letter-spacing: -0.01em;
-}
 
 .span-line {
   font-size: 13.5px;

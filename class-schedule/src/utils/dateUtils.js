@@ -182,11 +182,31 @@ export function dayOf(key) {
   return parseDate(key).getDate()
 }
 
-/** 히어로와 뱃지에 쓸 문구 */
+/**
+ * 히어로와 뱃지에 쓸 문구.
+ *
+ *   하루짜리     D-3 -> D-DAY -> (사라짐)
+ *   여러 날짜리   D-3 -> 진행 중 -> ... -> 마지막 날 -> (사라짐)
+ *
+ * 기간 일정은 시작한 날부터 '진행 중'이다. 주말처럼 쉬는 날도 기간 안이면
+ * 그대로 '진행 중'으로 둔다. 마지막 날만 따로 알려줘야 놓치지 않는다.
+ */
 export function statusLabel(event) {
   const n = dday(event.date)
+
+  // 아직 시작 전
   if (n > 0) return `D-${n}`
-  if (isRange(event) && isRunning(event)) return '진행 중'
-  if (n === 0) return 'D-DAY'
+
+  if (!isRange(event)) {
+    return n === 0 ? 'D-DAY' : `D+${Math.abs(n)}`
+  }
+
+  if (dday(endDateOf(event)) === 0) return '마지막 날'
+  if (isRunning(event)) return '진행 중'
   return `D+${Math.abs(n)}`
+}
+
+/** 큰 글씨로 쓰기엔 긴 문구인지 (히어로에서 글자 크기를 줄일 때 쓴다) */
+export function isWideLabel(label) {
+  return label === '진행 중' || label === '마지막 날'
 }

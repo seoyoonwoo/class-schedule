@@ -1,4 +1,10 @@
-import { dday, endDateOf, formatSpan, isRunning, statusLabel } from '../utils/dateUtils'
+import {
+  dday,
+  endDateOf,
+  formatSpan,
+  isWideLabel,
+  statusLabel,
+} from '../utils/dateUtils'
 import { eventImages, fallbackToFull, thumbUrl } from '../utils/image'
 import { typeStyle } from '../utils/eventTypes'
 
@@ -43,11 +49,12 @@ export default function DdayHero({ events, onPhoto, isNew }) {
 
   const lead = events[0]
   const label = statusLabel(lead)
-  const running = label === '진행 중' && isRunning(lead)
-  const urgent = running || (dday(lead.date) <= 3 && dday(endDateOf(lead)) >= 0)
+  const wide = isWideLabel(label)
+  // 진행 중이거나 3일 안쪽이면 빨갛게
+  const urgent = wide || (dday(lead.date) <= 3 && dday(endDateOf(lead)) >= 0)
 
   const ddayLine = (
-    <p className={`dday${urgent ? ' urgent' : ''}${running ? ' running' : ''}`}>
+    <p className={`dday${urgent ? ' urgent' : ''}${wide ? ' wide' : ''}`}>
       {label}
     </p>
   )
