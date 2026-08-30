@@ -75,6 +75,30 @@ export function useEvents(isAdmin) {
     }
   }, [data, isAdmin])
 
+  // ---------- 공지 ----------
+  // 일정과 달리 날짜가 없다. 최신순으로 쌓이고 직접 지울 때까지 남는다.
+
+  const addNotice = useCallback((notice) => {
+    setData((prev) => ({
+      ...prev,
+      notices: [notice, ...(prev.notices || [])],
+    }))
+  }, [])
+
+  const updateNotice = useCallback((id, next) => {
+    setData((prev) => ({
+      ...prev,
+      notices: (prev.notices || []).map((n) => (n.id === id ? { ...next, id } : n)),
+    }))
+  }, [])
+
+  const removeNotice = useCallback((id) => {
+    setData((prev) => ({
+      ...prev,
+      notices: (prev.notices || []).filter((n) => n.id !== id),
+    }))
+  }, [])
+
   const addEvent = useCallback((event) => {
     setData((prev) => ({ ...prev, events: [...prev.events, event] }))
   }, [])
@@ -123,6 +147,7 @@ export function useEvents(isAdmin) {
   }, [data])
 
   const events = data?.events || []
+  const notices = data?.notices || []
   const visible = events.filter((e) => dday(endDateOf(e)) >= -KEEP_PAST_DAYS)
 
   return {
@@ -132,6 +157,10 @@ export function useEvents(isAdmin) {
     refresh,
     className: data?.className || '우리 반',
     events,
+    notices,
+    addNotice,
+    updateNotice,
+    removeNotice,
     visible,
     pastCount: events.length - visible.length,
     dirty,

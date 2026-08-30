@@ -1,4 +1,3 @@
-import { Analytics } from '@vercel/analytics/react'
 import { useEffect, useState } from 'react'
 import DdayHero from './components/DdayHero'
 import EventList from './components/EventList'
@@ -6,6 +5,8 @@ import CalendarView from './components/CalendarView'
 import EventSheet from './components/EventSheet'
 import EditPanel from './components/EditPanel'
 import PhotoViewer from './components/PhotoViewer'
+import NoticeSection from './components/NoticeSection'
+import NoticeView from './components/NoticeView'
 import { useEvents } from './utils/useEvents'
 import { useSeen } from './utils/useSeen'
 import { usePullToRefresh } from './utils/usePullToRefresh'
@@ -32,16 +33,17 @@ const EDIT_TAB = { id: 'edit', label: '편집', glyph: '✎' }
 export default function App() {
   const { isAdmin, lock } = useAdmin()
   const store = useEvents(isAdmin)
-  const isNew = useSeen(store.visible)
+  const isNew = useSeen([...store.visible, ...store.notices])
   const [tab, setTab] = useState('home')
   // 열려 있는 상세 창. { title, events } 형태.
   // 목록에서 누르면 그 일정 하나만, 달력에서 날짜를 누르면 그 날 전부 담는다.
   const [sheet, setSheet] = useState(null)
   const [toast, setToast] = useState('')
   const [viewer, setViewer] = useState(null) // { images, index }
+  const [notice, setNotice] = useState(null) // 열려 있는 공지
 
   // 상세 창이나 사진 뷰어가 떠 있으면 당겨서 새로고침을 막는다
-  const { pull, ready } = usePullToRefresh(store.refresh, Boolean(sheet || viewer))
+  const { pull, ready } = usePullToRefresh(store.refresh, Boolean(sheet || viewer || notice))
   const spinning = store.refreshing
   const offset = spinning ? 56 : pull
 
@@ -162,6 +164,12 @@ export default function App() {
               </section>
             )
           })}
+
+          <NoticeSection
+            notices={store.notices}
+            onSelect={setNotice}
+            isNew={isNew}
+          />
         </>
       )}
 
@@ -192,6 +200,14 @@ export default function App() {
         />
       )}
 
+      {notice && (
+        <NoticeView
+          notice={notice}
+          onClose={() => setNotice(null)}
+          onPhoto={openPhoto}
+        />
+      )}
+
       {viewer && (
         <PhotoViewer
           images={viewer.images}
@@ -213,6 +229,7 @@ export default function App() {
             onClick={() => {
               setTab(t.id)
               setSheet(null)
+              setNotice(null)
             }}
           >
             <span className="glyph">
@@ -223,8 +240,6 @@ export default function App() {
           </button>
         ))}
       </nav>
-
-      <Analytics />
     </div>
   )
 }

@@ -44,6 +44,15 @@ export default function EditPanel({ store, onToast, onLock }) {
   const [saveError, setSaveError] = useState('')
   const [confirmId, setConfirmId] = useState(null) // 삭제를 한 번 누른 항목
 
+  // 공지 작성
+  const noticeRef = useRef(null)
+  const [nEditingId, setNEditingId] = useState(null)
+  const [nTitle, setNTitle] = useState('')
+  const [nBody, setNBody] = useState('')
+  const [nPhotos, setNPhotos] = useState([])
+  const [nError, setNError] = useState('')
+  const [nConfirmId, setNConfirmId] = useState(null)
+
   function resetForm() {
     setEditingId(null)
     setTitle('')
@@ -132,6 +141,88 @@ export default function EditPanel({ store, onToast, onLock }) {
 
   function removePhoto(name) {
     setPhotos((prev) => prev.filter((p) => p.name !== name))
+  }
+
+  function resetNotice() {
+    setNEditingId(null)
+    setNTitle('')
+    setNBody('')
+    setNPhotos([])
+    setNError('')
+  }
+
+  function startEditNotice(n) {
+    setNEditingId(n.id)
+    setNTitle(n.title)
+    setNBody(n.body || '')
+    setNPhotos(eventImages(n).map((name) => ({ name, preview: thumbUrl(name) })))
+    setNError('')
+    noticeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }
+
+  async function pickNoticePhotos(e) {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    if (files.length === 0) return
+
+    setNError('')
+    const added = []
+
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file.type.startsWith('image/')) continue
+
+      setProgress(`${i + 1}/${files.length}`)
+      try {
+        const sized = await prepareImage(file)
+        const name = await uploadImage(sized)
+        added.push({ name, preview: `data:image/jpeg;base64,${sized.thumb}` })
+      } catch (err) {
+        setNError(err.message)
+        break
+      }
+    }
+
+    setProgress('')
+    if (added.length > 0) setNPhotos((prev) => [...prev, ...added])
+  }
+
+  function submitNotice() {
+    if (!nTitle.trim()) {
+      setNError('공지 제목을 입력해 주세요.')
+      return
+    }
+
+    const payload = {
+      title: nTitle.trim(),
+      body: nBody.trim(),
+      postedAt: toKey(today()),
+      updatedAt: Date.now(),
+      ...(nPhotos.length > 0 ? { images: nPhotos.map((p) => p.name) } : {}),
+    }
+
+    if (nEditingId) {
+      // 수정할 때는 처음 올린 날짜를 그대로 둔다
+      const before = store.notices.find((n) => n.id === nEditingId)
+      store.updateNotice(nEditingId, {
+        ...payload,
+        postedAt: before?.postedAt || payload.postedAt,
+      })
+      onToast('공지를 수정했어요')
+    } else {
+      store.addNotice({
+        id: `n-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        ...payload,
+      })
+      onToast('공지를 올렸어요')
+    }
+
+    resetNotice()
+  }
+
+  function askDeleteNotice(id) {
+    setNConfirmId(id)
+    setTimeout(() => setNConfirmId((cur) => (cur === id ? null : cur)), 4000)
   }
 
   function handleSubmit() {
@@ -443,6 +534,132 @@ export default function EditPanel({ store, onToast, onLock }) {
             >
               지난 일정 {store.pastCount}개 정리
             </button>
+          )}
+        </div>
+      </section>
+
+      <section className="section" ref={noticeRef}>
+        <p className="section-label">{nEditingId ? '공지 수정' : '새 공지'}</p>
+        <div className={`card${nEditingId ? ' editing' : ''}`}>
+          <div className="field">
+            <label htmlFor="ntitle">제목</label>
+            <input
+              id="ntitle"
+              value={nTitle}
+              placeholder="예) 수행 일정 변경 안내"
+              onChange={(e) => {
+                setNTitle(e.target.value)
+                if (nError) setNError('')
+              }}
+            />
+          </div>
+
+          <div className="field">
+            <label htmlFor="nbody">내용</label>
+            <textarea
+              id="nbody"
+              value={nBody}
+              rows={5}
+              placeholder={'자세한 내용을 적어 주세요\n줄을 바꿔서 여러 줄로 쓸 수 있어요'}
+              onChange={(e) => setNBody(e.target.value)}
+            />
+          </div>
+
+          <div className="field">
+            <label>사진 (여러 장 가능)</label>
+
+            {nPhotos.length > 0 && (
+              <div className="photo-grid">
+                {nPhotos.map((p) => (
+                  <div className="photo-item" key={p.name}>
+                    <img src={p.preview} alt="첨부한 사진" />
+                    <button
+                      className="photo-x"
+                      onClick={() =>
+                        setNPhotos((prev) => prev.filter((x) => x.name !== p.name))
+                      }
+                      aria-label="이 사진 빼기"
+                    >
+                      ×
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            <label className={`photo-drop${busy ? ' busy' : ''}`}>
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={pickNoticePhotos}
+                disabled={busy || !token}
+              />
+              {busy
+                ? `올리는 중... ${progress}`
+                : !token
+                  ? '토큰을 먼저 등록해 주세요'
+                  : nPhotos.length > 0
+                    ? '사진 더 고르기'
+                    : '사진 고르기'}
+            </label>
+          </div>
+
+          {nError && <p className="error">{nError}</p>}
+
+          <button className="btn" disabled={busy} onClick={submitNotice}>
+            {nEditingId ? '수정 저장' : '공지 올리기'}
+          </button>
+
+          {nEditingId && (
+            <button className="btn ghost" style={{ marginTop: 9 }} onClick={resetNotice}>
+              취소
+            </button>
+          )}
+        </div>
+      </section>
+
+      <section className="section">
+        <p className="section-label">올린 공지 {store.notices.length}개</p>
+        <div className="card">
+          {store.notices.length === 0 ? (
+            <p className="empty-note" style={{ padding: '10px 0' }}>
+              아직 없어요
+            </p>
+          ) : (
+            store.notices.map((n) => (
+              <div className="manage-row" key={n.id}>
+                <button
+                  className={`info${nEditingId === n.id ? ' on' : ''}`}
+                  onClick={() => startEditNotice(n)}
+                >
+                  <span className="n">{n.title}</span>
+                  <span className="d">
+                    {n.postedAt ? formatKorean(n.postedAt) : ''}
+                    {eventImages(n).length > 0 && ` · 사진 ${eventImages(n).length}장`}
+                  </span>
+                </button>
+                <button
+                  className={`del${nConfirmId === n.id ? ' armed' : ''}`}
+                  onClick={() => {
+                    if (nConfirmId !== n.id) {
+                      askDeleteNotice(n.id)
+                      return
+                    }
+                    if (nEditingId === n.id) resetNotice()
+                    store.removeNotice(n.id)
+                    setNConfirmId(null)
+                    onToast('삭제했어요')
+                  }}
+                >
+                  {nConfirmId === n.id ? '정말 삭제' : '삭제'}
+                </button>
+              </div>
+            ))
+          )}
+
+          {store.notices.length > 0 && (
+            <p className="hint">공지를 누르면 수정할 수 있어요.</p>
           )}
         </div>
       </section>
