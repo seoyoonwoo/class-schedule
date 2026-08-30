@@ -9,7 +9,16 @@ import { useEvents } from './utils/useEvents'
 import { useSeen } from './utils/useSeen'
 import { usePullToRefresh } from './utils/usePullToRefresh'
 import { useAdmin } from './utils/useAdmin'
-import { dday, eventDates, formatKorean, toKey, today, upcoming } from './utils/dateUtils'
+import {
+  dday,
+  eventDates,
+  formatKorean,
+  heroRank,
+  isFinished,
+  toKey,
+  today,
+  upcoming,
+} from './utils/dateUtils'
 import { GROUPS, groupOf } from './utils/eventTypes'
 
 const BASE_TABS = [
@@ -77,14 +86,28 @@ export default function App() {
     return () => clearTimeout(t)
   }, [toast])
 
-  // 홈 화면: 시험과 수행평가 중 제일 가까운 것을 크게 띄운다.
-  // 제출이나 준비물은 날짜가 더 가깝더라도 자기 칸에만 나온다.
-  const next = upcoming(store.visible)
-  const heroPool = next.filter((e) => groupOf(e.type) !== 'activity')
-  const soonest = heroPool.length > 0 ? dday(heroPool[0].date) : null
+  // 홈 화면에 올릴 일정.
+  // 오후 5시가 지나면 오늘 끝난 것은 내린다. 이미 끝난 수행평가가 저녁까지
+  // 맨 위를 차지하면 정작 내일 있는 일정을 놓치기 때문이다.
+  const next = upcoming(store.visible).filter((e) => !isFinished(e))
 
-  // 같은 날에 여러 개면 하나만 보여주다 놓칠 수 있으니 전부 띄운다
-  const heroes = heroPool.filter((e) => dday(e.date) === soonest)
+  // 크게 띄울 후보는 시험과 수행평가만. 제출이나 준비물은 자기 칸에만 나온다.
+  const heroPool = next.filter((e) => groupOf(e.type) !== 'activity')
+
+  // 진행 중인 시험 > 오늘 있는 것 > 가까운 순
+  const ranked = [...heroPool].sort((a, b) => {
+    const r = heroRank(a) - heroRank(b)
+    return r !== 0 ? r : dday(a.date) - dday(b.date)
+  })
+
+  // 같은 자리에 여러 개면 하나만 보여주다 놓칠 수 있으니 전부 띄운다
+  const lead = ranked[0]
+  const heroes = lead
+    ? ranked.filter(
+        (e) => heroRank(e) === heroRank(lead) && dday(e.date) === dday(lead.date)
+      )
+    : []
+
   const heroIds = new Set(heroes.map((e) => e.id))
   const below = next.filter((e) => !heroIds.has(e.id))
 

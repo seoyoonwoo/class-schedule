@@ -1,4 +1,10 @@
 // 날짜 계산은 전부 여기 모아둠. 시간대 문제 안 생기게
+
+/**
+ * 하루 일정이 끝난 걸로 치는 시각 (24시간 기준). 17이면 오후 5시.
+ * 학교가 더 늦게 끝나면 이 숫자만 바꾸면 된다.
+ */
+export const DAY_ENDS_AT = 17
 // "2026-09-15" 같은 문자열을 항상 "그 지역 자정"으로 다룬다.
 
 const WEEKDAY_KO = ['일', '월', '화', '수', '목', '금', '토']
@@ -209,4 +215,43 @@ export function statusLabel(event) {
 /** 큰 글씨로 쓰기엔 긴 문구인지 (히어로에서 글자 크기를 줄일 때 쓴다) */
 export function isWideLabel(label) {
   return label === '진행 중' || label === '마지막 날'
+}
+
+// ---------- 하루가 끝났는지 ----------
+
+/**
+ * 오늘 일과가 끝난 시각을 지났는지 (기본 오후 5시).
+ * 학교가 끝난 뒤에는 오늘 있던 일정을 홈 화면에서 내린다.
+ */
+export function afterSchool() {
+  return new Date().getHours() >= DAY_ENDS_AT
+}
+
+/**
+ * 홈 화면에서 이 일정을 이제 내려도 되는지.
+ *
+ *   하루짜리    당일 오후 5시가 지나면 내린다
+ *   기간짜리    마지막 날 오후 5시가 지나면 내린다
+ *
+ * 달력에서는 그대로 보이므로 "지난 일정 보기"에는 영향이 없다.
+ */
+export function isFinished(event) {
+  const left = dday(endDateOf(event))
+  if (left < 0) return true
+  if (left === 0) return afterSchool()
+  return false
+}
+
+/** 홈 화면 히어로에 올릴 순서. 숫자가 작을수록 위에 온다. */
+export function heroRank(event) {
+  // 며칠 이어지는 시험이 진행 중이면 최우선. 시험 기간에는 그게 제일 중요하다.
+  // 하루짜리 시험은 여기 해당하지 않는다. 같은 날 있는 수행평가와 나란히
+  // 보여야 하기 때문이다.
+  if (event.type === '시험' && isRange(event) && isRunning(event)) return 0
+
+  // 오늘 있는 것
+  if (dday(event.date) === 0) return 1
+
+  // 나머지는 가까운 순서대로
+  return 2
 }
