@@ -1,21 +1,54 @@
 import { useEffect, useRef, useState } from 'react'
 import { imageUrl } from '../utils/image'
 
+const MAX_SCALE = 5
+const SWIPE_THRESHOLD = 60 // 이만큼 밀어야 다음 사진으로 넘어간다
+
+function distanceBetween(touches) {
+  const dx = touches[0].clientX - touches[1].clientX
+  const dy = touches[0].clientY - touches[1].clientY
+  return Math.hypot(dx, dy)
+}
+
+function centerOf(touches) {
+  return {
+    x: (touches[0].clientX + touches[1].clientX) / 2,
+    y: (touches[0].clientY + touches[1].clientY) / 2,
+  }
+}
+
 /**
  * 사진 전체화면 뷰어.
- * 폰에서 안내문이나 시간표 사진을 읽을 수 있게 확대까지 지원한다.
- * 사진을 누르면 2.5배로 커지고, 그 상태에서 손가락으로 밀어서 볼 수 있다.
+ *
+ * 두 손가락으로 벌리면 확대되고, 확대한 상태에서 끌면 움직인다.
+ * 원래 크기일 때 좌우로 밀면 다음 사진으로 넘어간다.
+ * 사진 앱에서 쓰던 방식 그대로라 따로 배울 게 없다.
  */
-export default function PhotoViewer({ images, index, onClose }) {
-  const [current, setCurrent] = useState(index)
-  const [zoomed, setZoomed] = useState(false)
-  const scrollRef = useRef(null)
+export default function PhotoViewer({ images, index: startIndex, onClose }) {
+  const [index, setIndex] = useState(startIndex)
+  const [scale, setScale] = useState(1)
+  const [pos, setPos] = useState({ x: 0, y: 0 })
+  const [dragX, setDragX] = useState(0) // 사진을 넘기는 중의 미리보기 이동
+
+  const stageRef = useRef(null)
+  const gesture = useRef(null)
+  const lastTap = useRef(0)
+
+  const many = images.length > 1
+  const zoomed = scale > 1.02
+
+  // 사진을 넘기면 확대 상태를 되돌린다
+  useEffect(() => {
+    setScale(1)
+    setPos({ x: 0, y: 0 })
+    setDragX(0)
+  }, [index])
 
   useEffect(() => {
     function onKey(e) {
       if (e.key === 'Escape') onClose()
-      if (e.key === 'ArrowRight') go(1)
-      if (e.key === 'ArrowLeft') go(-1)
+      if (e.key === 'ArrowRight') step(1)
+      if (e.key === 'ArrowLeft') step(-1)
     }
     window.addEventListener('keydown', onKey)
     document.body.style.overflow = 'hidden'
@@ -23,28 +56,150 @@ export default function PhotoViewer({ images, index, onClose }) {
       window.removeEventListener('keydown', onKey)
       document.body.style.overflow = ''
     }
-  })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [images.length])
 
-  function go(step) {
-    setZoomed(false)
-    setCurrent((c) => (c + step + images.length) % images.length)
+  function step(delta) {
+    if (images.length < 2) return
+    setIndex((i) => (i + delta + images.length) % images.length)
   }
 
-  function toggleZoom() {
-    setZoomed((z) => {
-      // 축소로 돌아갈 때는 스크롤 위치도 처음으로
-      if (z && scrollRef.current) scrollRef.current.scrollTo(0, 0)
-      return !z
-    })
+  /** 확대한 사진이 화면 밖으로 너무 빠져나가지 않게 잡아준다 */
+  function clamp(next, s) {
+    const el = stageRef.current
+    if (!el) return next
+    const r = el.getBoundingClientRect()
+    const maxX = Math.max(0, (r.width * (s - 1)) / 2)
+    const maxY = Math.max(0, (r.height * (s - 1)) / 2)
+    return {
+      x: Math.min(maxX, Math.max(-maxX, next.x)),
+      y: Math.min(maxY, Math.max(-maxY, next.y)),
+    }
   }
 
-  const many = images.length > 1
+  function onTouchStart(e) {
+    if (e.touches.length === 2) {
+      gesture.current = {
+        mode: 'pinch',
+        startDist: distanceBetween(e.touches),
+        startScale: scale,
+        startPos: pos,
+        startCenter: centerOf(e.touches),
+      }
+      return
+    }
+
+    if (e.touches.length === 1) {
+      const t = e.touches[0]
+      gesture.current = {
+        mode: zoomed ? 'pan' : 'swipe',
+        x0: t.clientX,
+        y0: t.clientY,
+        startPos: pos,
+        moved: 0,
+      }
+    }
+  }
+
+  function onTouchMove(e) {
+    const g = gesture.current
+    if (!g) return
+
+    if (g.mode === 'pinch' && e.touches.length === 2) {
+      const ratio = distanceBetween(e.touches) / g.startDist
+      const next = Math.min(MAX_SCALE, Math.max(1, g.startScale * ratio))
+
+      // 손가락 사이 지점을 기준으로 커지게 해서 보던 곳이 유지되게 한다
+      const c = centerOf(e.touches)
+      const shift = next / g.startScale
+      setScale(next)
+      setPos(
+        clamp(
+          {
+            x: c.x - g.startCenter.x + g.startPos.x * shift,
+            y: c.y - g.startCenter.y + g.startPos.y * shift,
+          },
+          next
+        )
+      )
+      return
+    }
+
+    if (e.touches.length !== 1) return
+    const t = e.touches[0]
+    const dx = t.clientX - g.x0
+    const dy = t.clientY - g.y0
+    g.moved = Math.hypot(dx, dy)
+
+    if (g.mode === 'pan') {
+      setPos(clamp({ x: g.startPos.x + dx, y: g.startPos.y + dy }, scale))
+    } else if (g.mode === 'swipe' && many) {
+      setDragX(dx)
+    }
+  }
+
+  function onTouchEnd(e) {
+    const g = gesture.current
+
+    // 두 손가락 중 하나를 떼면 남은 손가락으로 이어서 조작하게 한다
+    if (e.touches.length === 1 && g?.mode === 'pinch') {
+      const t = e.touches[0]
+      gesture.current = {
+        mode: zoomed ? 'pan' : 'swipe',
+        x0: t.clientX,
+        y0: t.clientY,
+        startPos: pos,
+        moved: 0,
+      }
+      return
+    }
+    if (e.touches.length > 0) return
+
+    gesture.current = null
+
+    if (g?.mode === 'swipe') {
+      if (Math.abs(dragX) > SWIPE_THRESHOLD) {
+        step(dragX < 0 ? 1 : -1)
+      }
+      setDragX(0)
+    }
+
+    // 거의 원래 크기면 딱 맞춰 되돌린다
+    if (scale < 1.05) {
+      setScale(1)
+      setPos({ x: 0, y: 0 })
+    }
+
+    // 두 번 톡톡 치면 확대 / 축소
+    if (g && g.moved < 10) {
+      const now = Date.now()
+      if (now - lastTap.current < 300) {
+        if (zoomed) {
+          setScale(1)
+          setPos({ x: 0, y: 0 })
+        } else {
+          setScale(2.5)
+        }
+        lastTap.current = 0
+      } else {
+        lastTap.current = now
+      }
+    }
+  }
+
+  /** 마우스 휠로도 확대되게 (컴퓨터에서 볼 때) */
+  function onWheel(e) {
+    if (!e.ctrlKey && Math.abs(e.deltaY) < 4) return
+    const next = Math.min(MAX_SCALE, Math.max(1, scale - e.deltaY * 0.003))
+    setScale(next)
+    if (next === 1) setPos({ x: 0, y: 0 })
+  }
 
   return (
     <div className="viewer" role="dialog" aria-label="사진 크게 보기">
       <div className="viewer-bar">
         <span className="viewer-count">
-          {many ? `${current + 1} / ${images.length}` : ''}
+          {many ? `${index + 1} / ${images.length}` : ''}
         </span>
         <button className="viewer-x" onClick={onClose} aria-label="닫기">
           ×
@@ -52,31 +207,43 @@ export default function PhotoViewer({ images, index, onClose }) {
       </div>
 
       <div
-        className={`viewer-stage${zoomed ? ' zoomed' : ''}`}
-        ref={scrollRef}
+        className="viewer-stage"
+        ref={stageRef}
+        onTouchStart={onTouchStart}
+        onTouchMove={onTouchMove}
+        onTouchEnd={onTouchEnd}
+        onTouchCancel={onTouchEnd}
+        onWheel={onWheel}
         onClick={(e) => {
-          // 사진 바깥을 누르면 닫는다
-          if (e.target === e.currentTarget) onClose()
+          if (e.target === e.currentTarget && !zoomed) onClose()
         }}
       >
         <img
-          src={imageUrl(images[current])}
-          alt={`사진 ${current + 1}`}
-          onClick={toggleZoom}
+          src={imageUrl(images[index])}
+          alt={`사진 ${index + 1}`}
+          draggable={false}
+          style={{
+            transform: `translate(${pos.x + dragX}px, ${pos.y}px) scale(${scale})`,
+            transition: gesture.current ? 'none' : 'transform 0.2s ease',
+          }}
         />
       </div>
 
       <div className="viewer-foot">
         {many && (
-          <button className="viewer-nav" onClick={() => go(-1)} aria-label="이전 사진">
+          <button className="viewer-nav" onClick={() => step(-1)} aria-label="이전 사진">
             ‹
           </button>
         )}
         <span className="viewer-hint">
-          {zoomed ? '사진을 누르면 원래 크기로' : '사진을 누르면 확대'}
+          {zoomed
+            ? '끌어서 움직이기'
+            : many
+              ? '두 손가락으로 확대 · 밀어서 넘기기'
+              : '두 손가락으로 확대'}
         </span>
         {many && (
-          <button className="viewer-nav" onClick={() => go(1)} aria-label="다음 사진">
+          <button className="viewer-nav" onClick={() => step(1)} aria-label="다음 사진">
             ›
           </button>
         )}
