@@ -1,3 +1,4 @@
+import { Analytics } from '@vercel/analytics/react'
 import { useEffect, useState } from 'react'
 import DdayHero from './components/DdayHero'
 import EventList from './components/EventList'
@@ -222,6 +223,8 @@ export default function App() {
           </button>
         ))}
       </nav>
+
+      <Analytics />
     </div>
   )
 }
