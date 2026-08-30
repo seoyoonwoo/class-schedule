@@ -1799,3 +1799,84 @@ select {
   opacity: 0.32;
   cursor: default;
 }
+
+/* ---------- 급식 ---------- */
+
+.meal-today {
+  padding: 20px;
+}
+
+.meal-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+}
+
+.meal-list li {
+  font-size: 19px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.45;
+  padding: 9px 0;
+  word-break: keep-all;
+}
+
+.meal-list li + li {
+  border-top: 1px dashed var(--rule);
+}
+
+.meal-allergy {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  margin-top: 3px;
+}
+
+.meal-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--rule-strong);
+}
+
+.meal-kcal {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+}
+
+.meal-none {
+  font-family: var(--font-hand);
+  font-size: 21px;
+  color: var(--ink-faint);
+  text-align: center;
+  padding: 26px 0 12px;
+  margin: 0;
+}
+
+.meal-next {
+  padding: 15px 17px;
+}
+
+.meal-next + .meal-next {
+  margin-top: 8px;
+}
+
+.meal-date {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-faint);
+  margin: 0 0 5px;
+}
+
+.meal-line {
+  font-size: 14.5px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0;
+  word-break: keep-all;
+}

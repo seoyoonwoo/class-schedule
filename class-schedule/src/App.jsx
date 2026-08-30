@@ -8,10 +8,12 @@ import PhotoViewer from './components/PhotoViewer'
 import NoticeSection from './components/NoticeSection'
 import NoticeView from './components/NoticeView'
 import TimetableView from './components/TimetableView'
+import MealView from './components/MealView'
 import { useEvents } from './utils/useEvents'
 import { useSeen } from './utils/useSeen'
 import { usePullToRefresh } from './utils/usePullToRefresh'
 import { isTimetableReady } from './utils/timetable'
+import { isMealReady } from './utils/meal'
 import { useAdmin } from './utils/useAdmin'
 import {
   dday,
@@ -32,6 +34,7 @@ const BASE_TABS = [
 
 // 인증키를 넣어야 나타난다 (config.js의 SCHOOL)
 const TIMETABLE_TAB = { id: 'timetable', label: '시간표', glyph: '▤' }
+const MEAL_TAB = { id: 'meal', label: '급식', glyph: '◍' }
 
 const EDIT_TAB = { id: 'edit', label: '편집', glyph: '✎' }
 
@@ -73,6 +76,7 @@ export default function App() {
   const tabs = [
     ...BASE_TABS,
     ...(isTimetableReady() ? [TIMETABLE_TAB] : []),
+    ...(isMealReady() ? [MEAL_TAB] : []),
     ...(isAdmin ? [EDIT_TAB] : []),
   ]
 
@@ -197,6 +201,8 @@ export default function App() {
       )}
 
       {tab === 'timetable' && <TimetableView />}
+
+      {tab === 'meal' && <MealView />}
 
       {!store.loading && !store.error && tab === 'edit' && isAdmin && (
         <EditPanel store={store} onToast={setToast} onLock={lock} />
