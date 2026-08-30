@@ -18,7 +18,7 @@ import {
   saveToken,
   uploadImage,
 } from '../utils/github'
-import { eventImages, imageUrl, shrinkToBase64 } from '../utils/image'
+import { eventImages, prepareImage, thumbUrl } from '../utils/image'
 
 const NOTIFY_OPTIONS = [14, 7, 3, 1]
 
@@ -67,7 +67,7 @@ export default function EditPanel({ store, onToast, onLock }) {
     setType(event.type)
     setDetail(event.detail || '')
     setNotify(event.notifyBefore || [])
-    setPhotos(eventImages(event).map((name) => ({ name, preview: imageUrl(name) })))
+    setPhotos(eventImages(event).map((name) => ({ name, preview: thumbUrl(name) })))
     setError('')
     formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -116,9 +116,10 @@ export default function EditPanel({ store, onToast, onLock }) {
 
       setProgress(`${i + 1}/${files.length}`)
       try {
-        const base64 = await shrinkToBase64(file)
-        const name = await uploadImage(base64)
-        added.push({ name, preview: `data:image/jpeg;base64,${base64}` })
+        const sized = await prepareImage(file)
+        const name = await uploadImage(sized)
+        // 미리보기는 작은 사본으로 충분하다
+        added.push({ name, preview: `data:image/jpeg;base64,${sized.thumb}` })
       } catch (err) {
         setError(err.message)
         break // 한 장이 실패하면 멈춘다. 앞서 올라간 건 그대로 쓴다

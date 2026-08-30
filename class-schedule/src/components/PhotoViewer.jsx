@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { imageUrl } from '../utils/image'
+import { imageUrl, thumbUrl } from '../utils/image'
 
 const MAX_SCALE = 5
 const SWIPE_THRESHOLD = 60 // 이만큼 밀어야 다음 사진으로 넘어간다
@@ -30,6 +30,8 @@ export default function PhotoViewer({ images, index: startIndex, onClose }) {
   const [pos, setPos] = useState({ x: 0, y: 0 })
   const [dragX, setDragX] = useState(0) // 사진을 넘기는 중의 미리보기 이동
 
+  const [ready, setReady] = useState(false) // 원본이 도착했는지
+
   const stageRef = useRef(null)
   const gesture = useRef(null)
   const lastTap = useRef(0)
@@ -42,7 +44,14 @@ export default function PhotoViewer({ images, index: startIndex, onClose }) {
     setScale(1)
     setPos({ x: 0, y: 0 })
     setDragX(0)
-  }, [index])
+    setReady(false)
+
+    // 원본은 용량이 크다. 먼저 작은 사본을 띄워두고 다 받아지면 바꾼다.
+    const full = new Image()
+    full.onload = () => setReady(true)
+    full.onerror = () => setReady(true)
+    full.src = imageUrl(images[index])
+  }, [index, images])
 
   useEffect(() => {
     function onKey(e) {
@@ -219,7 +228,11 @@ export default function PhotoViewer({ images, index: startIndex, onClose }) {
         }}
       >
         <img
-          src={imageUrl(images[index])}
+          src={ready ? imageUrl(images[index]) : thumbUrl(images[index])}
+          onError={(e) => {
+            // 사본이 없는 예전 사진이면 원본으로
+            if (!ready) setReady(true)
+          }}
           alt={`사진 ${index + 1}`}
           draggable={false}
           style={{

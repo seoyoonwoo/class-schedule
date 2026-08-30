@@ -1,5 +1,5 @@
 import { dday, endDateOf, formatSpan, isRunning, statusLabel } from '../utils/dateUtils'
-import { eventImages, imageUrl } from '../utils/image'
+import { eventImages, fallbackToFull, thumbUrl } from '../utils/image'
 import { typeStyle } from '../utils/eventTypes'
 
 /**
@@ -13,7 +13,13 @@ function PhotoButton({ event, onPhoto }) {
 
   return (
     <button className="photo-open" onClick={() => onPhoto(photos, 0)}>
-      <img className="photo-thumb" src={imageUrl(photos[0])} alt="" loading="lazy" />
+      <img
+        className="photo-thumb"
+        src={thumbUrl(photos[0])}
+        alt=""
+        loading="lazy"
+        onError={(e) => fallbackToFull(e, photos[0])}
+      />
       <span>사진 {photos.length}장 보기</span>
       <span className="photo-open-arrow">›</span>
     </button>

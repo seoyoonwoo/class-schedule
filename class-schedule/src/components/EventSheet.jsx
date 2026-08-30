@@ -1,7 +1,7 @@
 import { useEffect } from 'react'
 import { formatSpan, isRange, statusLabel } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
-import { eventImages, imageUrl } from '../utils/image'
+import { eventImages, fallbackToFull, thumbUrl } from '../utils/image'
 
 export default function EventSheet({ title, events, onClose, onPhoto }) {
   useEffect(() => {
@@ -51,7 +51,12 @@ export default function EventSheet({ title, events, onClose, onPhoto }) {
                   onClick={() => onPhoto(all, i)}
                   aria-label={`${e.title} 사진 ${i + 1} 크게 보기`}
                 >
-                  <img src={imageUrl(name)} alt="" loading="lazy" />
+                  <img
+                    src={thumbUrl(name)}
+                    alt=""
+                    loading="lazy"
+                    onError={(ev) => fallbackToFull(ev, name)}
+                  />
                 </button>
               ))}
             </div>

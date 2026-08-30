@@ -85,7 +85,7 @@ async function explain(res) {
  * 사진 한 장을 저장소에 올리고 파일 이름을 돌려준다.
  * 일정에는 이 이름만 저장해두고, 화면에 띄울 때 그때 받아온다.
  */
-export async function uploadImage(base64) {
+export async function uploadImage({ full, thumb }) {
   if (!isConfigured()) throw new Error('config.js에 owner와 repo를 먼저 적어 주세요.')
 
   const token = getToken()
@@ -93,17 +93,22 @@ export async function uploadImage(base64) {
 
   const name = `${Date.now()}-${Math.random().toString(36).slice(2, 7)}.jpg`
 
-  const res = await fetch(endpoint(`${imageDir()}/${name}`), {
-    method: 'PUT',
-    headers: headers(token),
-    body: JSON.stringify({
-      message: `사진 추가 ${name}`,
-      content: base64,
-      branch: GITHUB.branch,
-    }),
-  })
+  async function put(path, content) {
+    const res = await fetch(endpoint(path), {
+      method: 'PUT',
+      headers: headers(token),
+      body: JSON.stringify({
+        message: `사진 추가 ${name}`,
+        content,
+        branch: GITHUB.branch,
+      }),
+    })
+    if (!res.ok) throw new Error(await explain(res))
+  }
 
-  if (!res.ok) throw new Error(await explain(res))
+  // 목록용 작은 사본을 먼저 올린다. 원본이 실패해도 목록은 깨지지 않게.
+  await put(`${imageDir()}/thumbs/${name}`, thumb)
+  await put(`${imageDir()}/${name}`, full)
 
   return name
 }
