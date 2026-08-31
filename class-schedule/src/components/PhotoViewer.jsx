@@ -31,6 +31,7 @@ export default function PhotoViewer({ images, index: startIndex, onClose }) {
   const [dragX, setDragX] = useState(0) // 사진을 넘기는 중의 미리보기 이동
 
   const [ready, setReady] = useState(false) // 원본이 도착했는지
+  const [saving, setSaving] = useState(false)
 
   const stageRef = useRef(null)
   const gesture = useRef(null)
@@ -196,6 +197,40 @@ export default function PhotoViewer({ images, index: startIndex, onClose }) {
     }
   }
 
+  /**
+   * 사진 저장.
+   *
+   * 아이폰 사파리는 다운로드가 제대로 안 되는 대신 공유 시트를 띄울 수 있다.
+   * 거기서 '이미지 저장'을 누르면 사진첩에 들어간다.
+   * 안드로이드와 컴퓨터는 그냥 내려받는다.
+   */
+  async function save() {
+    setSaving(true)
+    try {
+      const url = imageUrl(images[index])
+      const blob = await (await fetch(url)).blob()
+      const name = images[index]
+      const file = new File([blob], name, { type: blob.type || 'image/jpeg' })
+
+      if (navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file] })
+      } else {
+        const objectUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = objectUrl
+        a.download = name
+        document.body.appendChild(a)
+        a.click()
+        a.remove()
+        URL.revokeObjectURL(objectUrl)
+      }
+    } catch {
+      // 사용자가 공유 창을 닫은 경우도 여기로 온다. 알릴 필요는 없다.
+    } finally {
+      setSaving(false)
+    }
+  }
+
   /** 마우스 휠로도 확대되게 (컴퓨터에서 볼 때) */
   function onWheel(e) {
     if (!e.ctrlKey && Math.abs(e.deltaY) < 4) return
@@ -210,9 +245,28 @@ export default function PhotoViewer({ images, index: startIndex, onClose }) {
         <span className="viewer-count">
           {many ? `${index + 1} / ${images.length}` : ''}
         </span>
-        <button className="viewer-x" onClick={onClose} aria-label="닫기">
-          ×
-        </button>
+        <div className="viewer-actions">
+          <button
+            className="viewer-x"
+            onClick={save}
+            disabled={saving}
+            aria-label="사진 저장"
+          >
+            <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+              <path
+                d="M12 3v12M7.5 10.5 12 15l4.5-4.5M4 20h16"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              />
+            </svg>
+          </button>
+          <button className="viewer-x" onClick={onClose} aria-label="닫기">
+            ×
+          </button>
+        </div>
       </div>
 
       <div

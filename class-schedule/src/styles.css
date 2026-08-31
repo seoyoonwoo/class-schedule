@@ -1880,3 +1880,13 @@ select {
   margin: 0;
   word-break: keep-all;
 }
+
+.viewer-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.viewer-x:disabled {
+  opacity: 0.45;
+}
