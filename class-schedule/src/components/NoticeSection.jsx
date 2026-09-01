@@ -1,45 +1,5 @@
 import { formatKorean } from '../utils/dateUtils'
-
-/** 확성기 아이콘. 앱의 형광펜 컨셉에 맞춰 뒤에 노란 칠을 깔았다. */
-function Megaphone() {
-  return (
-    <svg className="notice-mark" viewBox="0 0 40 32" aria-hidden="true">
-      <rect x="0" y="2" width="40" height="28" rx="6" fill="#FFE86B" opacity="0.5" />
-      <path
-        d="M9 12 L20 6 L20 26 L9 20 Z"
-        fill="#fff"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M12 20 L12 26 L16 26 L16 22"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-      />
-      <path
-        d="M25 11 Q 29 16 25 21"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-      <path
-        d="M30 7 Q 37 16 30 25"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2.2"
-        strokeLinecap="round"
-      />
-    </svg>
-  )
-}
-
-// 이 개수를 넘으면 칸 안에서 스크롤된다
-const VISIBLE_ROWS = 3
+import { MegaphoneIcon } from './TabIcons'
 
 /**
  * 홈 화면의 공지 칸.
@@ -49,7 +9,7 @@ export default function NoticeSection({ notices, onSelect, isNew }) {
   return (
     <section className="section">
       <p className="section-label notice-label">
-        <Megaphone />
+        <MegaphoneIcon />
         공지
       </p>
 

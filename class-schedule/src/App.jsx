@@ -9,6 +9,13 @@ import NoticeSection from './components/NoticeSection'
 import NoticeView from './components/NoticeView'
 import TimetableView from './components/TimetableView'
 import MealView from './components/MealView'
+import {
+  CalendarIcon,
+  ClockIcon,
+  HomeIcon,
+  MealIcon,
+  PencilIcon,
+} from './components/TabIcons'
 import { useEvents } from './utils/useEvents'
 import { useSeen } from './utils/useSeen'
 import { usePullToRefresh } from './utils/usePullToRefresh'
@@ -28,15 +35,15 @@ import {
 import { GROUPS, groupOf } from './utils/eventTypes'
 
 const BASE_TABS = [
-  { id: 'home', label: '홈', glyph: '✦' },
-  { id: 'calendar', label: '달력', glyph: '▦' },
+  { id: 'home', label: '홈', Icon: HomeIcon },
+  { id: 'calendar', label: '달력', Icon: CalendarIcon },
 ]
 
 // 인증키를 넣어야 나타난다 (config.js의 SCHOOL)
-const TIMETABLE_TAB = { id: 'timetable', label: '시간표', glyph: '▤' }
-const MEAL_TAB = { id: 'meal', label: '급식', glyph: '◍' }
+const TIMETABLE_TAB = { id: 'timetable', label: '시간표', Icon: ClockIcon }
+const MEAL_TAB = { id: 'meal', label: '급식', Icon: MealIcon }
 
-const EDIT_TAB = { id: 'edit', label: '편집', glyph: '✎' }
+const EDIT_TAB = { id: 'edit', label: '편집', Icon: PencilIcon }
 
 export default function App() {
   const { isAdmin, lock } = useAdmin()
@@ -250,7 +257,7 @@ export default function App() {
             }}
           >
             <span className="glyph">
-              {t.glyph}
+              <t.Icon />
               {t.id === 'edit' && store.dirty && <i className="tab-dot" />}
             </span>
             {t.label}

@@ -687,8 +687,13 @@ select {
 }
 
 .tabbar .glyph {
-  font-size: 17px;
-  line-height: 1;
+  display: grid;
+  place-items: center;
+  line-height: 0;
+}
+
+.tabbar .glyph svg {
+  display: block;
 }
 
 /* ---------- 사진 ---------- */
@@ -1530,9 +1535,9 @@ select {
   font-size: 13px;
 }
 
-.notice-mark {
-  width: 30px;
-  height: 24px;
+.notice-label svg {
+  width: 19px;
+  height: 19px;
   flex: none;
   color: var(--ink);
 }
