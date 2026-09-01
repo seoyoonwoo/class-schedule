@@ -1,6 +1,10 @@
 import { formatKorean } from '../utils/dateUtils'
 import { MegaphoneIcon } from './TabIcons'
 
+// 이 개수를 넘으면 칸 안에서 스크롤된다
+const VISIBLE_ROWS = 3
+
+
 /**
  * 홈 화면의 공지 칸.
  * 일정과 달리 날짜로 사라지지 않고, 올린 날짜를 함께 보여준다.
