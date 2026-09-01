@@ -22,6 +22,8 @@ import { useSeen } from './utils/useSeen'
 import { usePullToRefresh } from './utils/usePullToRefresh'
 import { isTimetableReady } from './utils/timetable'
 import { isMealReady } from './utils/meal'
+import { isScheduleReady } from './utils/schoolSchedule'
+import DataSource from './components/DataSource'
 import { useAdmin } from './utils/useAdmin'
 import {
   dday,
@@ -205,6 +207,7 @@ export default function App() {
             점이 찍힌 날짜를 누르면 자세히 볼 수 있어요. 지난 일정은 흐리게
             보여요.
           </p>
+          {isScheduleReady() && <DataSource />}
         </>
       )}
 

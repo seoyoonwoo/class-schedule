@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { addDays, formatKorean, toKey, today } from '../utils/dateUtils'
 import { ALLERGENS, fetchMeals } from '../utils/meal'
+import DataSource from './DataSource'
 
 const DAYS_AHEAD = 6 // 오늘부터 일주일치
 
@@ -96,6 +97,7 @@ export default function MealView() {
       <p className="hint" style={{ textAlign: 'center', marginTop: 14 }}>
         학교에서 올린 식단을 그대로 보여줘요.
       </p>
+      <DataSource />
     </>
   )
 }

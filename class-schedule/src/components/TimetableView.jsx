@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { addDays, dayOf, toKey, today, weekdayOf } from '../utils/dateUtils'
 import { fetchRange, mondayOf, weekDays } from '../utils/timetable'
+import DataSource from './DataSource'
 
 const WEEKDAYS = ['월', '화', '수', '목', '금']
 
@@ -148,6 +149,7 @@ export default function TimetableView() {
       <p className="hint" style={{ textAlign: 'center', marginTop: 14 }}>
         학교에서 올린 시간표를 그대로 보여줘요. 바뀌면 자동으로 반영돼요.
       </p>
+      <DataSource />
     </>
   )
 }
