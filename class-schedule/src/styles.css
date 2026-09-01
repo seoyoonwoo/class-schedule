@@ -1890,3 +1890,80 @@ select {
 .viewer-x:disabled {
   opacity: 0.45;
 }
+
+
+/* ---------- 달력 확대해서 보기 ---------- */
+
+.cal-big {
+  position: fixed;
+  inset: 0;
+  z-index: 55;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  padding: calc(14px + env(safe-area-inset-top)) 12px
+    calc(14px + env(safe-area-inset-bottom));
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  animation: fade 0.16s ease both;
+}
+
+.cal-big .cal-grid {
+  flex: 1;
+  min-height: 0;
+  grid-auto-rows: 1fr;
+}
+
+/* 확대하면 칸이 커지고 일정 이름이 글자로 들어간다 */
+.cal-big .cal-cell {
+  aspect-ratio: auto;
+  align-items: stretch;
+  padding: 5px 4px;
+  gap: 3px;
+  min-height: 0;
+}
+
+.cal-big .cal-cell .num {
+  text-align: left;
+  padding-left: 2px;
+  flex: none;
+}
+
+.cell-names {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  width: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.cell-name {
+  font-size: 9.5px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.04em;
+  padding: 2px 3px;
+  border-radius: 3px;
+  text-align: left;
+  color: var(--ink);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  word-break: break-all;
+}
+
+/* 학교 일정은 우리 반 일정과 구분되게 형광펜 없이 */
+.cell-name.school {
+  background: transparent;
+  color: var(--ink-faint);
+  font-weight: 600;
+  padding-left: 1px;
+}
+
+.cell-name.school.holiday {
+  color: #d0708a;
+}

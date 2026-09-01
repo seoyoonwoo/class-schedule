@@ -37,3 +37,11 @@ export const SCHOOL = {
   grade: 1,
   classNo: 11,
 }
+
+export const SKIP_SCHOOL_EVENTS = [
+  '지필평가',
+  '전국연합학력평가',
+  '체험학습',
+  '토요휴업일',
+  '일요휴업일',
+]

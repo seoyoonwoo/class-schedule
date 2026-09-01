@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import {
   addDays,
   buildMonthGrid,
@@ -10,6 +10,7 @@ import {
   today,
 } from '../utils/dateUtils'
 import { typeStyle } from '../utils/eventTypes'
+import { fetchSchoolSchedule, isScheduleReady } from '../utils/schoolSchedule'
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토']
 
@@ -61,8 +62,53 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
     month: now.getMonth(),
   })
 
+  // 확대해서 보기. 켜면 화면을 꽉 채우고 칸마다 일정 이름이 글자로 나온다.
+  const [big, setBig] = useState(false)
+
   const dayMap = buildDayMap(events)
   const cells = buildMonthGrid(cursor.year, cursor.month)
+
+  // 학교 전체 일정. 우리 반 일정과 섞이지 않게 달력에는 공휴일 색만 반영하고,
+  // 나머지는 달력 아래 목록으로만 보여준다.
+  const [school, setSchool] = useState([])
+
+  useEffect(() => {
+    if (!isScheduleReady()) return
+    let alive = true
+
+    const first = `${cursor.year}-${String(cursor.month + 1).padStart(2, '0')}-01`
+    const lastDay = new Date(cursor.year, cursor.month + 1, 0).getDate()
+    const last = `${cursor.year}-${String(cursor.month + 1).padStart(2, '0')}-${lastDay}`
+
+    fetchSchoolSchedule(first, last)
+      .then((list) => {
+        if (alive) setSchool(list)
+      })
+      .catch(() => {
+        if (alive) setSchool([])
+      })
+
+    return () => {
+      alive = false
+    }
+  }, [cursor.year, cursor.month])
+
+  const holidays = new Set(school.filter((s) => s.holiday).map((s) => s.date))
+
+  // 확대했을 때 칸 안에 이름을 넣기 위해 날짜별로 묶는다
+  const schoolByDate = {}
+  for (const item of school) {
+    if (!schoolByDate[item.date]) schoolByDate[item.date] = []
+    schoolByDate[item.date].push(item)
+  }
+
+  const eventsByDate = {}
+  for (const e of events) {
+    for (const key of eventDates(e)) {
+      if (!eventsByDate[key]) eventsByDate[key] = []
+      eventsByDate[key].push(e)
+    }
+  }
 
   function shift(delta) {
     setCursor(({ year, month }) => {
@@ -72,7 +118,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
   }
 
   return (
-    <div className="card">
+    <div className={`card${big ? ' cal-big' : ''}`}>
       <div className="cal-head">
         <button
           className="month"
@@ -88,6 +134,15 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
           <button onClick={() => shift(1)} aria-label="다음 달">
             ›
           </button>
+          {big ? (
+            <button onClick={() => setBig(false)} aria-label="작게 보기">
+              ×
+            </button>
+          ) : (
+            <button onClick={() => setBig(true)} aria-label="자세히 보기">
+              ⤢
+            </button>
+          )}
         </div>
       </div>
 
@@ -108,7 +163,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
           const classes = [
             'cal-cell',
             c.inMonth ? '' : 'out',
-            c.weekday === 0 ? 'sun' : '',
+            c.weekday === 0 || holidays.has(c.key) ? 'sun' : '',
             c.isToday ? 'today' : '',
             count > 0 ? 'has-event' : '',
             allPast ? 'past-only' : '',
@@ -121,13 +176,35 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
             <button
               key={c.key}
               className={classes}
-              disabled={count === 0}
+              disabled={count === 0 || big}
               onClick={() => onSelect(c.key)}
               aria-label={`${c.day}일${count ? `, 일정 ${count}개` : ''}`}
             >
               <span className="num">{c.day}</span>
 
-              {day.dots.length > 0 && (
+              {big && (
+                <span className="cell-names">
+                  {(eventsByDate[c.key] || []).map((e) => (
+                    <span
+                      key={e.id}
+                      className="cell-name"
+                      style={{ background: typeStyle(e.type).hl }}
+                    >
+                      {e.title}
+                    </span>
+                  ))}
+                  {(schoolByDate[c.key] || []).map((s) => (
+                    <span
+                      key={s.name}
+                      className={`cell-name school${s.holiday ? ' holiday' : ''}`}
+                    >
+                      {s.name}
+                    </span>
+                  ))}
+                </span>
+              )}
+
+              {!big && day.dots.length > 0 && (
                 <span className="dots">
                   {day.dots.slice(0, 3).map((d) => (
                     <span
@@ -139,7 +216,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
                 </span>
               )}
 
-              {day.bands.length > 0 && (
+              {!big && day.bands.length > 0 && (
                 <span className="bands">
                   {day.bands.slice(0, 2).map((b) => (
                     <span
@@ -154,6 +231,7 @@ export default function CalendarView({ events, selectedDate, onSelect }) {
           )
         })}
       </div>
+
     </div>
   )
 }
