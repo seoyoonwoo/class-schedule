@@ -33,7 +33,6 @@ async function table(method, body, extraHeaders = {}) {
     method,
     headers: {
       apikey: PUSH.supabaseKey,
-      Authorization: `Bearer ${PUSH.supabaseKey}`,
       'Content-Type': 'application/json',
       ...extraHeaders,
     },
@@ -93,7 +92,6 @@ export async function unsubscribe() {
       method: 'DELETE',
       headers: {
         apikey: PUSH.supabaseKey,
-        Authorization: `Bearer ${PUSH.supabaseKey}`,
       },
     }
   )
