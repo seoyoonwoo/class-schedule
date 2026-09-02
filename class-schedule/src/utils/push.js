@@ -71,12 +71,8 @@ export async function subscribe() {
   })
 
   const json = sub.toJSON()
-  await table(
-    'POST',
-    { endpoint: json.endpoint, keys: json.keys },
-    // 이미 있는 주소면 조용히 넘어간다
-    { Prefer: 'resolution=ignore-duplicates' }
-  )
+  // 같은 주소를 다시 넣으면 409가 오는데, 이미 등록돼 있다는 뜻이라 그냥 넘어간다
+  await table('POST', { endpoint: json.endpoint, keys: json.keys })
 
   return sub
 }
