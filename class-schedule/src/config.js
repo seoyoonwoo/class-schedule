@@ -50,5 +50,5 @@ export const SKIP_SCHOOL_EVENTS = [
 export const PUSH = {
   publicKey: 'BL4tdKg038Hq4N_tXpCaYmbgEUrKVk8m9_6H00UbsqXuzbgF-8yO_PlWKXg2asaXdRQgIlK9KiczuAR9cYhE6r8',
   supabaseUrl: 'https://qzpvtfuawsydfinleumm.supabase.co',
-  supabaseKey: 'sb_publishable_UaNnghXnuOlJKSIsLgiAcQ_FzDNnSyw',
+  supabaseKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF6cHZ0ZnVhd3N5ZGZpbmxldW1tIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODgzNDc3MzMsImV4cCI6MjEwMzkyMzczM30.Rr6pvQnB1LIViQFziwF5drt8SDCVNFJE1Ty2Bcg0GFg',
 }

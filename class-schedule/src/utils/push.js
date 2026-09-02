@@ -31,8 +31,9 @@ function toUint8Array(base64) {
 async function table(method, body, extraHeaders = {}) {
   const res = await fetch(`${PUSH.supabaseUrl}/rest/v1/subscriptions`, {
     method,
-    headers: {
+        headers: {
       apikey: PUSH.supabaseKey,
+      Authorization: `Bearer ${PUSH.supabaseKey}`,
       'Content-Type': 'application/json',
       ...extraHeaders,
     },
@@ -90,8 +91,9 @@ export async function unsubscribe() {
     `${PUSH.supabaseUrl}/rest/v1/subscriptions?endpoint=eq.${endpoint}`,
     {
       method: 'DELETE',
-      headers: {
+            headers: {
         apikey: PUSH.supabaseKey,
+        Authorization: `Bearer ${PUSH.supabaseKey}`,
       },
     }
   )
