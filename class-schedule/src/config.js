@@ -45,3 +45,10 @@ export const SKIP_SCHOOL_EVENTS = [
   '토요휴업일',
   '일요휴업일',
 ]
+
+
+export const PUSH = {
+  publicKey: 'BL4tdKg038Hq4N_tXpCaYmbgEUrKVk8m9_6H00UbsqXuzbgF-8yO_PlWKXg2asaXdRQgIlK9KiczuAR9cYhE6r8',
+  supabaseUrl: 'https://qzpvtfuawsydfinleumm.supabase.co',
+  supabaseKey: 'sb_publishable_UaNnghXnuOlJKSIsLgiAcQ_FzDNnSyw',
+}

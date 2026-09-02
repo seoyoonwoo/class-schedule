@@ -1957,8 +1957,6 @@ select {
   text-overflow: ellipsis;
   display: -webkit-box;
   -webkit-line-clamp: 2;
-    line-clamp: 2;
-  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   word-break: break-all;
 }
@@ -2000,4 +1998,38 @@ select {
 
 .notice-link:active {
   opacity: 0.6;
+}
+
+/* ---------- 알림 받기 ---------- */
+
+.push-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+}
+
+.push-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.push-title {
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.push-desc {
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-faint);
+  margin: 4px 0 0;
+  word-break: keep-all;
+  line-height: 1.5;
+}
+
+.push-card .btn {
+  flex: none;
 }

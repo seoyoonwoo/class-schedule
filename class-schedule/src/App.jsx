@@ -24,6 +24,7 @@ import { isTimetableReady } from './utils/timetable'
 import { isMealReady } from './utils/meal'
 import { isScheduleReady } from './utils/schoolSchedule'
 import DataSource from './components/DataSource'
+import PushToggle from './components/PushToggle'
 import { useAdmin } from './utils/useAdmin'
 import {
   dday,
@@ -193,6 +194,8 @@ export default function App() {
             onSelect={setNotice}
             isNew={isNew}
           />
+
+          <PushToggle />
         </>
       )}
 

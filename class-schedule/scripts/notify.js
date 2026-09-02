@@ -42,7 +42,8 @@ function formatDate(dateStr) {
   return `${m}월 ${d}일 (${weekday})`
 }
 
-// notifyBefore에 오늘 남은 일수가 들어있는 일정만 고른다
+// notifyBefore에 오늘 남은 일수가 들어있는 일정만 고른다.
+// 여러 날 이어지는 일정은 시작일 기준으로 센다.
 const due = data.events.filter((e) => {
   const left = daysUntil(e.date)
   const rules = e.notifyBefore || []
@@ -60,7 +61,11 @@ const lines = due
     const left = daysUntil(e.date)
     const tag = left === 0 ? '**오늘!**' : `**D-${left}**`
     const memo = e.detail ? `\n> ${e.detail}` : ''
-    return `${EMOJI[e.type] || '📌'} ${tag} ${e.title} — ${formatDate(e.date)}${memo}`
+    const when =
+      e.endDate && e.endDate > e.date
+        ? `${formatDate(e.date)} ~ ${formatDate(e.endDate)}`
+        : formatDate(e.date)
+    return `${EMOJI[e.type] || '📌'} ${tag} ${e.title} — ${when}${memo}`
   })
 
 const message = `📅 **${data.className || '우리 반'} 일정 알림**\n\n${lines.join('\n\n')}`
