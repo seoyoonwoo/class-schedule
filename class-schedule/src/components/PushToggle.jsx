@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { currentSubscription, isPushReady, subscribe } from '../utils/push'
+import { isPushReady, isSubscribed, subscribe } from '../utils/push'
 
 /**
  * 알림 받기 버튼.
@@ -20,10 +20,22 @@ export default function PushToggle() {
       setChecked(true)
       return
     }
-    currentSubscription()
-      .then((sub) => setOn(Boolean(sub)))
+    isSubscribed()
+      .then(setOn)
       .catch(() => {})
       .finally(() => setChecked(true))
+  }, [])
+
+  // 앱으로 돌아올 때마다 다시 확인한다.
+  // 폰 설정에서 알림을 껐다면 그때 '켜기' 버튼이 다시 나와야 한다.
+  useEffect(() => {
+    function recheck() {
+      if (document.visibilityState === 'visible') {
+        isSubscribed().then(setOn).catch(() => {})
+      }
+    }
+    document.addEventListener('visibilitychange', recheck)
+    return () => document.removeEventListener('visibilitychange', recheck)
   }, [])
 
   if (!isPushReady() || !checked) return null

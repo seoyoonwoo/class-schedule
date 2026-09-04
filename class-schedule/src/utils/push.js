@@ -45,12 +45,20 @@ async function table(method, body, extraHeaders = {}) {
   return res
 }
 
-/** 이 기기가 이미 알림을 받고 있는지 */
-export async function currentSubscription() {
-  if (!isPushReady()) return null
+/**
+ * 이 기기가 지금 알림을 받고 있는지.
+ *
+ * 구독 객체만 보면 안 된다. 폰 설정에서 알림을 꺼도 구독은 남아 있어서
+ * 켜져 있는 것처럼 보인다. 권한까지 함께 확인해야 한다.
+ */
+export async function isSubscribed() {
+  if (!isPushReady()) return false
+  if (Notification.permission !== 'granted') return false
+
   const reg = await navigator.serviceWorker.getRegistration()
-  if (!reg) return null
-  return reg.pushManager.getSubscription()
+  if (!reg) return false
+
+  return Boolean(await reg.pushManager.getSubscription())
 }
 
 /** 알림 켜기 */
@@ -60,15 +68,19 @@ export async function subscribe() {
     throw new Error('알림이 차단되어 있어요. 폰 설정에서 허용해 주세요.')
   }
 
-  const reg = await navigator.serviceWorker.register(
-    `${import.meta.env.BASE_URL}sw.js`
-  )
-  await navigator.serviceWorker.ready
+  await navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`)
 
-  const sub = await reg.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: toUint8Array(PUSH.publicKey),
-  })
+  // ready는 '활성화된' 서비스워커를 돌려준다. register가 준 것을 그대로 쓰면
+  // 아직 준비 중이라 첫 시도가 실패하고, 새로고침해야 되는 문제가 생긴다.
+  const reg = await navigator.serviceWorker.ready
+
+  // 이미 구독이 있으면 그대로 쓴다. 새로 만들면 주소가 바뀌어 중복이 쌓인다.
+  const sub =
+    (await reg.pushManager.getSubscription()) ||
+    (await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: toUint8Array(PUSH.publicKey),
+    }))
 
   const json = sub.toJSON()
   await table(
