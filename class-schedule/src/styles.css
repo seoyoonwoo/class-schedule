@@ -2038,3 +2038,28 @@ select {
 .push-card .btn {
   flex: none;
 }
+
+/* 알림이 켜진 상태 */
+.push-card.done {
+  background: #f2f8f4;
+  border-color: #cfe3d6;
+}
+
+.push-check {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #2f7d54;
+  color: #fff;
+}
+
+.push-card.done .push-title {
+  color: #1f5c3c;
+}
+
+.push-card.done .push-desc {
+  color: #4a7a5f;
+}

@@ -80,29 +80,3 @@ export async function subscribe() {
 
   return sub
 }
-
-/** 알림 끄기 */
-export async function unsubscribe() {
-  const sub = await currentSubscription()
-  if (!sub) return
-
-  const endpoint = encodeURIComponent(sub.endpoint)
-  await fetch(
-    `${PUSH.supabaseUrl}/rest/v1/subscriptions?endpoint=eq.${endpoint}`,
-    {
-      method: 'DELETE',
-      headers: {
-        apikey: PUSH.supabaseKey,
-        Authorization: `Bearer ${PUSH.supabaseKey}`,
-      },
-    }
-  )
-
-  await sub.unsubscribe()
-}
-
-  await sub.unsubscribe()
-
-  // 서비스워커도 함께 정리한다. 남겨두면 바로 다시 켤 때 꼬인다.
-  const reg = await navigator.serviceWorker.getRegistration()
-  if (reg) await reg.unregister()
