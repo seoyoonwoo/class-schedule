@@ -31,7 +31,7 @@ function toUint8Array(base64) {
 async function table(method, body, extraHeaders = {}) {
   const res = await fetch(`${PUSH.supabaseUrl}/rest/v1/subscriptions`, {
     method,
-        headers: {
+    headers: {
       apikey: PUSH.supabaseKey,
       Authorization: `Bearer ${PUSH.supabaseKey}`,
       'Content-Type': 'application/json',
@@ -71,8 +71,12 @@ export async function subscribe() {
   })
 
   const json = sub.toJSON()
-  // 같은 주소를 다시 넣으면 409가 오는데, 이미 등록돼 있다는 뜻이라 그냥 넘어간다
-  await table('POST', { endpoint: json.endpoint, keys: json.keys })
+  await table(
+    'POST',
+    { endpoint: json.endpoint, keys: json.keys },
+    // 이미 있는 주소면 조용히 넘어간다
+    { Prefer: 'resolution=ignore-duplicates' }
+  )
 
   return sub
 }
@@ -87,7 +91,7 @@ export async function unsubscribe() {
     `${PUSH.supabaseUrl}/rest/v1/subscriptions?endpoint=eq.${endpoint}`,
     {
       method: 'DELETE',
-            headers: {
+      headers: {
         apikey: PUSH.supabaseKey,
         Authorization: `Bearer ${PUSH.supabaseKey}`,
       },

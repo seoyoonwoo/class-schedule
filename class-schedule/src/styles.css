@@ -334,10 +334,15 @@ select {
 
 .cal-grid {
   gap: 3px;
+  /* minmax(0, 1fr)이라야 띠가 칸을 밀어내지 않는다.
+     그냥 1fr이면 내용 크기만큼 열이 넓어져 오른쪽이 잘린다. */
+  grid-template-columns: repeat(7, minmax(0, 1fr));
 }
 
 .cal-cell {
   position: relative;
+  min-width: 0;
+  overflow: hidden;
   aspect-ratio: 1 / 1.12;
   border-radius: 9px;
   display: flex;
@@ -915,8 +920,8 @@ select {
 
 /* 달력의 띠. 칸 사이 간격까지 덮어서 하나로 이어져 보이게 한다 */
 .bands {
-  width: calc(100% + 6px);
-  margin: auto -3px 5px;
+  width: 100%;
+  margin: auto 0 5px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -928,12 +933,12 @@ select {
 
 .band.first {
   border-radius: 3px 0 0 3px;
-  margin-left: 3px;
+  margin-left: 2px;
 }
 
 .band.last {
   border-radius: 0 3px 3px 0;
-  margin-right: 3px;
+  margin-right: 2px;
 }
 
 .band.first.last {
@@ -1149,8 +1154,8 @@ select {
 
 /* 달력의 띠. 칸 사이 간격까지 덮어서 하나로 이어져 보이게 한다 */
 .bands {
-  width: calc(100% + 6px);
-  margin: auto -3px 5px;
+  width: 100%;
+  margin: auto 0 5px;
   display: flex;
   flex-direction: column;
   gap: 2px;
@@ -1162,12 +1167,12 @@ select {
 
 .band.first {
   border-radius: 3px 0 0 3px;
-  margin-left: 3px;
+  margin-left: 2px;
 }
 
 .band.last {
   border-radius: 0 3px 3px 0;
-  margin-right: 3px;
+  margin-right: 2px;
 }
 
 .band.first.last {
