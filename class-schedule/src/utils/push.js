@@ -100,3 +100,9 @@ export async function unsubscribe() {
 
   await sub.unsubscribe()
 }
+
+  await sub.unsubscribe()
+
+  // 서비스워커도 함께 정리한다. 남겨두면 바로 다시 켤 때 꼬인다.
+  const reg = await navigator.serviceWorker.getRegistration()
+  if (reg) await reg.unregister()
