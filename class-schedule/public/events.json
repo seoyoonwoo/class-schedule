@@ -18,10 +18,11 @@
         3,
         1
       ],
-      "updatedAt": 1788856736752,
+      "updatedAt": 1789493477654,
       "images": [
         "1788856696660-q334x.jpg",
-        "1788856705680-bskn4.jpg"
+        "1788856705680-bskn4.jpg",
+        "1789493471426-eb2pb.jpg"
       ],
       "id": "2026-10-08-tarvx"
     },
@@ -193,6 +194,16 @@
     }
   ],
   "notices": [
+    {
+      "id": "n-1789493530594-g3ub",
+      "title": "2학기 제 1차 지필평가 일정 안내",
+      "body": "",
+      "postedAt": "2026-09-16",
+      "updatedAt": 1789493530594,
+      "images": [
+        "1789493518325-ou88t.jpg"
+      ]
+    },
     {
       "title": "화정고등학교 DBpia 학술논문 접속 안내",
       "body": "www.dbpia.co.kr \n대표 계정\n아이디 : hwajung   \n비밀번호: hwajung26",
