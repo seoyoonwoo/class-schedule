@@ -166,6 +166,25 @@
       "images": [
         "1794410098729-538tc.jpg"
       ]
+    },
+    {
+      "id": "2026-11-17-wpggr",
+      "title": "수학 수행평가",
+      "type": "수행평가",
+      "date": "2026-11-17",
+      "detail": "-11월 15일 5시까지 설문 제출\nhttps://docs.google.com/forms/d/e/1FAIpQLSeoBXifE-eKD3vLkE7Pmu70RM80knqLhNqpXlO5Lf2zIOFX4g/viewform",
+      "notifyBefore": [
+        7,
+        3,
+        1
+      ],
+      "updatedAt": 1794419514018,
+      "images": [
+        "1794419445228-4y0gv.jpg",
+        "1794419459134-rzuw6.jpg",
+        "1794419464586-xac5y.jpg",
+        "1794419470691-h2gtu.jpg"
+      ]
     }
   ],
   "notices": [
