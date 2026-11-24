@@ -193,13 +193,13 @@
       "title": "사회 수행평가",
       "type": "수행평가",
       "date": "2026-11-25",
-      "detail": "-6교시",
+      "detail": "-2교시",
       "notifyBefore": [
         7,
         3,
         1
       ],
-      "updatedAt": 1795406615689,
+      "updatedAt": 1795495203669,
       "images": [
         "1794987801597-bsrjs.jpg"
       ],
